@@ -83,7 +83,7 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     # 1. Sales Growth
     # (used in V6.0 sector relative scoring)
     sg_val = data.get("Sales_Growth_5Y%", 0) or data.get("Sales_Growth_TTM%", 0) or 0
-    score_sales = normalize_metric(data.get("Sales_Growth_5Y%", 0), 5, 25)
+    score_sales = normalize_metric(data.get("Sales_Growth_5Y%", 0), 0, 40)
 
     # 2. ROE (with cascading fallback + V3.1 confidence penalty)
     roe_5y = data.get("Avg_ROE_5Y%", 0)
@@ -128,7 +128,9 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     score_eps = normalize_metric(data.get("EPS_Growth%", 0), 5, 30)
     
     # 6. F-Score (0-9)
-    score_fscore = (data.get("F_Score", 0) / 9) * 100
+    f_score_val = data.get("F_Score")
+    if f_score_val is None: f_score_val = 0
+    score_fscore = (f_score_val / 9.0) * 100
     
     # 7. Debt / Equity
     if "Bank" in data.get("Sector", "") or "Financial" in data.get("Sector", ""):
@@ -141,7 +143,8 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     price = data.get("Price", 0) or 0
     score_mom_tech = normalize_metric(down_from_high, 0, 40, invert=True) if price > 0 else 0
     
-    rs_rating = data.get("RS_Rating", 0)
+    rs_rating = data.get("RS_Rating")
+    if rs_rating is None: rs_rating = 0
     score_rs = 0
     if rs_rating > 1.2: score_rs = 100
     elif rs_rating > 1.0: score_rs = 75
@@ -243,14 +246,15 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     total_bonus = 0
     
     # Phase 2: Earnings Inflection Bonus (Graduated 0-5 Score)
-    inflection_score = data.get("Earnings_Inflection_Score", 0)
+    inflection_score = data.get("Earnings_Inflection_Score")
+    if inflection_score is None: inflection_score = 0
     if inflection_score >= 4:
         total_bonus += 8  # Strong acceleration across revenue, earnings, and margins
     elif inflection_score >= 3:
         total_bonus += 5  # Good acceleration
     elif inflection_score >= 2:
         total_bonus += 3  # Moderate acceleration
-    elif data.get("Earnings_Accel", False):
+    elif data.get("Earnings_Accel"):
         total_bonus += 2  # Basic acceleration fallback
 
     # Phase 3: Sector Bonus
@@ -264,7 +268,8 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
         total_bonus += 5
         
     # Phase 5: Financial Fortress Bonus (F-Score 8 or 9)
-    if data.get("F_Score", 0) >= 8:
+    f_score_check = data.get("F_Score")
+    if f_score_check is not None and f_score_check >= 8:
         total_bonus += 5
         
     # Phase 6: Technical Trend Bonus
@@ -272,8 +277,9 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
         total_bonus += 5
         
     # Phase 7: Analyst Consensus Bonus
-    rating = data.get("Analyst_Rating", "").lower()
-    upside = data.get("Analyst_Upside%", 0)
+    rating = str(data.get("Analyst_Rating") or "").lower()
+    upside = data.get("Analyst_Upside%")
+    if upside is None: upside = 0
     
     if "strong buy" in rating:
         total_bonus += 5
@@ -284,8 +290,10 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
         total_bonus += 5
         
     # Phase 8: Institutional Sponsorship Bonus
-    inst_hold = data.get("Inst_Holding%", 0)
-    prom_hold = data.get("Promoter_Holding%", 0)
+    inst_hold = data.get("Inst_Holding%")
+    if inst_hold is None: inst_hold = 0
+    prom_hold = data.get("Promoter_Holding%")
+    if prom_hold is None: prom_hold = 0
     
     if inst_hold > 20:
         total_bonus += 5
@@ -313,9 +321,11 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
         total_bonus += 7
         
     # 3. Utility Debt Shield (Power Grid Case)
-    sector = data.get("Sector", "")
+    sector = str(data.get("Sector") or "")
     if "Utility" in sector or "Energy" in sector or "Power" in sector:
-        if data.get("Debt_Equity", 0) > 1.0 and data.get("F_Score", 0) >= 6:
+        de_check = data.get("Debt_Equity")
+        fs_check = data.get("F_Score")
+        if (de_check is not None and de_check > 1.0) and (fs_check is not None and fs_check >= 6):
             total_bonus += 5
 
     # --- APPLY CAPPED BONUS ---
@@ -433,10 +443,11 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
         apply_spline_cap(pm, 10.0, -5.0, 60, "Margin Decay Spline")
     
     # D5: F-Score quality mismatch
-    f_score_val = data.get("F_Score", 0)
+    f_score_val = data.get("F_Score")
+    if f_score_val is None: f_score_val = 0
     if f_score_val <= 4:
         # If F-Score is low, prevent high overall scores smoothly
-        score_ceiling = min(score_ceiling, 65 + (f_score_val * 6.5))
+        score_ceiling = min(score_ceiling, 65 + (f_score_val * 5.9))
         disqualifiers.append(f"Quality Floor Spline (F:{f_score_val})")
     
     # D6: Overvaluation Spline (Good gap: 0%, Bad gap: -70%, Cap: 65)
@@ -522,7 +533,8 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     checklist_total = 12
     
     # C1: Market Cap > 1,000 Cr (liquidity & stability)
-    if data.get("Market_Cap_Cr", 0) > 1000:
+    mcap_cr = data.get("Market_Cap_Cr")
+    if mcap_cr is not None and mcap_cr > 1000:
         checklist_pass += 1
     # C2: Valuation  PE < 25 (reasonable price)
     if pe is not None and 0 < pe < 25:
@@ -531,8 +543,8 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     if best_roe > 17:
         checklist_pass += 1
     # C4: Leverage  Debt/Equity between 0 and 1.0 (must have data)
-    de = data.get("Debt_Equity", -1)
-    if 0 <= de < 1.0:
+    de_val = data.get("Debt_Equity")
+    if de_val is not None and 0 <= de_val < 1.0:
         checklist_pass += 1
     # C5: Cash Quality  CFO/PAT > 1.0 (profits backed by cash)
     if data.get("CFO_PAT_Ratio", 0) > 1.0:
@@ -553,7 +565,8 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     if prom_hold > 50:
         checklist_pass += 1
     # C10: Financial Fortress  F-Score >= 6 (Piotroski quality)
-    if data.get("F_Score", 0) >= 6:
+    f_val_check = data.get("F_Score")
+    if f_val_check is not None and f_val_check >= 6:
         checklist_pass += 1
     # C11: Profit Uptrend (Sovrenn)  both revenue AND earnings growing > 10%
     #       Aggressive confirmation of execution
@@ -614,7 +627,7 @@ def calculate_institutional_score(data, sector_boost=0, market_regime="Neutral",
     raw_score = round(base_score, 1)
     
     return {
-        "total_score": round(max(0, min(final_score, 100)), 3), # Preserving epsilon precision
+        "total_score": round(max(0, min(final_score, 100.1)), 5), # Preserving epsilon precision
         "raw_score": raw_score,
         "checklist_score": f"{checklist_pass}/{checklist_total}",
         "data_confidence": data_confidence,

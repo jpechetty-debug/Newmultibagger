@@ -1,0 +1,22 @@
+# requirements_additions.txt
+# Add these lines to your existing requirements.txt
+# (or merge them — duplicates are safe)
+
+# ── Observability ─────────────────────────────────────────────────────────────
+prometheus-fastapi-instrumentator>=7.0.0
+prometheus-client>=0.20.0
+
+# ── Database ──────────────────────────────────────────────────────────────────
+# Async PostgreSQL driver (for DATABASE_URL=postgresql+psycopg://...)
+psycopg[binary]>=3.1.0
+# SQLAlchemy for the DB abstraction layer in get_connection()
+sqlalchemy>=2.0.0
+
+# ── Test tooling ──────────────────────────────────────────────────────────────
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=5.0.0
+
+# ── Config / secrets ─────────────────────────────────────────────────────────
+python-dotenv>=1.0.0    # already likely present; ensure it is
+pydantic-settings>=2.0  # for src/core/config.py BaseSettings
