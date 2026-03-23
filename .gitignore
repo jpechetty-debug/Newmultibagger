@@ -68,6 +68,14 @@ reports/*.html
 ops/daily_reports/
 ops/institutional_daily_scorecard.json
 
+# ── Debug / scratch outputs (never commit these) ─────────────────────────────
+check_fail*.txt
+disq_fail*.txt
+final_fail*.txt
+reports_cache/
+ops/ticker_list_*.txt
+ops/audit_result.txt
+
 # ── Data directory (populated at runtime) ────────────────────────────────────
 data/
 runtime/
