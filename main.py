@@ -42,10 +42,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Allow CORS
+# Allow CORS — origins driven by CORS_ALLOWED_ORIGINS env var (never wildcard in production)
+import config as _cfg
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cfg.CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -377,10 +378,10 @@ async def get_llm_thesis(symbol: str):
 def get_stock_history(symbol: str):
     """Fetch historical score data for a stock."""
     try:
-        conn = get_db_connection()
+        conn = get_connection() # Use get_connection instead of get_db_connection
         cursor = conn.cursor()
         
-        # Normaiize symbol
+        # Normalize symbol
         if not symbol.endswith(".NS"):
             symbol = f"{symbol}.NS"
             
@@ -478,7 +479,7 @@ async def get_thesis_break():
                 return json.load(f)
         return {"error": str(e)}
 
-@app.get("/api/thesis/{symbol}")
+@app.get("/api/thesis_status/{symbol}")
 async def get_thesis_status(symbol: str):
     """Fetch thesis status for a single stock."""
     try:
@@ -530,13 +531,16 @@ async def get_regime_status():
             else:
                 data["is_forced"] = False
 
+            details = data.get("details", {})
+            votes = data.get("votes", {})
+           
             payload = {
                 "regime": regime,
-                "vix": data["details"].get("vix", 0),
+                "vix": details.get("vix", 0),
                 "vix_threshold": 18.0,
-                "votes": data["details"].get("votes", {}),
-                "is_forced": data["is_forced"],
-                "details": data["details"],
+                "votes": votes,
+                "is_forced": data.get("is_forced", False),
+                "details": details,
                 "timestamp": datetime.now().strftime("%H:%M:%S"),
             }
             _cache_set(regime_cache, payload)
@@ -555,7 +559,6 @@ async def get_regime_status():
 def force_regime(regime: str):
     """Manually force the regime for next scans. options: BULL, BEAR, SIDEWAYS, AUTO"""
     try:
-        import modules.market_data as md
         import config
         
         regime = regime.upper()
@@ -862,8 +865,7 @@ async def get_valuation(symbol: str, as_of_date: str | None = None):
             return normalized
 
         def _ensure_valuation_table():
-            conn = sqlite3.connect(DB_PATH, timeout=5, check_same_thread=False)
-            conn.execute(f"PRAGMA busy_timeout={DB_BUSY_TIMEOUT_MS}")
+            conn = get_connection()
             try:
                 conn.execute(
                     """
@@ -891,8 +893,7 @@ async def get_valuation(symbol: str, as_of_date: str | None = None):
         await _run_sqlite_write_with_retry(_ensure_valuation_table, "valuation table init")
 
         def _read_cached():
-            conn = sqlite3.connect(DB_PATH, timeout=5, check_same_thread=False)
-            conn.execute(f"PRAGMA busy_timeout={DB_BUSY_TIMEOUT_MS}")
+            conn = get_connection()
             try:
                 if as_of_date:
                     query = """
@@ -982,8 +983,7 @@ async def get_valuation(symbol: str, as_of_date: str | None = None):
         metrics = engine.get_intrinsic_value()
 
         def _write_valuation():
-            conn = sqlite3.connect(DB_PATH, timeout=5, check_same_thread=False)
-            conn.execute(f"PRAGMA busy_timeout={DB_BUSY_TIMEOUT_MS}")
+            conn = get_connection()
             try:
                 cursor = conn.cursor()
                 cursor.execute(
@@ -1185,18 +1185,6 @@ async def get_shareholding(symbol: str):
         return _json_safe_clean(await get_shareholding_pattern(symbol))
     except Exception as e:
         return {"error": str(e)}
-
-def _json_safe_clean(obj):
-    """Deep clean Inf/NaN for JSON safety."""
-    import numpy as np
-    if isinstance(obj, dict):
-        return {k: _json_safe_clean(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [_json_safe_clean(v) for v in obj]
-    elif isinstance(obj, float):
-        if not np.isfinite(obj): return None
-        return obj
-    return obj
 
 # Quarterly Results Timeline API
 @app.get("/api/quarterly-results/{symbol}")
@@ -1426,5 +1414,3 @@ def _json_safe_clean(obj):
         if np.isnan(obj) or np.isinf(obj):
             return None
     return obj
-
-# Removed duplicate/conflicting startup block

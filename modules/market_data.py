@@ -221,7 +221,7 @@ class MarketDataProvider:
             
         except Exception as e:
             print(f"⚠️ Error in Regime Detection (v2.9): {e}")
-            return {"regime": "SIDEWAYS", "strategy_suggestion": "BALANCED"}
+            return {"regime": "SIDEWAYS", "strategy_suggestion": "BALANCED", "details": {}, "votes": {"BULL": 0, "BEAR": 0, "SIDEWAYS": 0}}
 
     def get_batch_history(self, tickers, period="6mo"):
         """
