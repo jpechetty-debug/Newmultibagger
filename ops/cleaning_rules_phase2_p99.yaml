@@ -1,0 +1,77 @@
+version: 1
+tables:
+- multibaggers
+- fundamentals_pit
+filter_mode: hard_fail_only
+normalization:
+  sector: true
+refresh:
+  enabled: true
+  source_table: fundamentals_pit
+  source_key_column: symbol
+  source_date_column: as_of_date
+  target_key_column: symbol
+  target_date_column: as_of_date
+  target_tables:
+  - multibaggers
+  min_age_days: 7
+  require_newer_source: true
+  allow_fill_missing_when_stale: true
+  overwrite_non_null: true
+  update_columns:
+  - price
+  - sector
+  - score
+  - sales_cagr_5y
+  - avg_roe_5y
+  - pe_ratio
+  - debt_equity
+  - market_cap_cr
+  - cfo_pat_ratio
+numeric_columns:
+- price
+- score
+- sales_growth
+- sales_cagr_5y
+- roe
+- avg_roe_5y
+- pe_ratio
+- debt_equity
+- cfo_pat_ratio
+- market_cap_cr
+- ml_predicted_return
+rules:
+- code: INF_ANY_NUMERIC
+  category: hard_fail
+  type: inf_any_numeric
+- code: EXTREME_PE_SECTOR_P995
+  category: hard_fail
+  type: group_percentile_upper
+  column: pe_ratio
+  group_by: sector
+  percentile: 0.99
+  min_group_size: 30
+  fallback_threshold: 500
+- code: EXTREME_ROE_SECTOR_P995
+  category: hard_fail
+  type: group_percentile_abs
+  columns:
+  - roe
+  - avg_roe_5y
+  group_by: sector
+  percentile: 0.99
+  min_group_size: 30
+  fallback_threshold: 300
+- code: HIGH_SALES_CAGR_SECTOR_P995
+  category: warning
+  type: group_percentile_abs
+  column: sales_cagr_5y
+  group_by: sector
+  percentile: 0.99
+  min_group_size: 30
+  fallback_threshold: 600
+- code: STALE_AS_OF_DATE
+  category: warning
+  type: max_age_days
+  column: as_of_date
+  threshold: 14

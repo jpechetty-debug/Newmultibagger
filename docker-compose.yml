@@ -1,0 +1,106 @@
+# Sovereign AI Trading Engine v4.0 — Production Docker Compose
+# Spins up: FastAPI App, PostgreSQL/TimescaleDB, Redis, Celery Workers, Celery Beat
+
+version: "3.9"
+
+services:
+  # ─── PostgreSQL + TimescaleDB ───
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: sovereign_db
+    environment:
+      POSTGRES_USER: sovereign
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sovereign_secret}
+      POSTGRES_DB: sovereign_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sovereign -d sovereign_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis (Message Broker + Cache) ───
+  redis:
+    image: redis:7-alpine
+    container_name: sovereign_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── FastAPI Application Server ───
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sovereign_app
+    environment:
+      DATABASE_URL: postgresql+psycopg://sovereign:${POSTGRES_PASSWORD:-sovereign_secret}@postgres:5432/sovereign_db
+      REDIS_URL: redis://redis:6379/0
+      REDIS_RESULT_BACKEND: redis://redis:6379/1
+      OLLAMA_URL: http://host.docker.internal:11434/api/generate
+    ports:
+      - "9005:9005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      python main.py
+
+  # ─── Celery Worker (Screening + Compute) ───
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sovereign_worker
+    environment:
+      DATABASE_URL: postgresql+psycopg://sovereign:${POSTGRES_PASSWORD:-sovereign_secret}@postgres:5432/sovereign_db
+      REDIS_URL: redis://redis:6379/0
+      REDIS_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      celery -A worker.celery_app worker
+      --loglevel=info
+      --pool=prefork
+      --concurrency=4
+      -Q screening,compute,llm,maintenance
+
+  # ─── Celery Beat (Task Scheduler) ───
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sovereign_beat
+    environment:
+      DATABASE_URL: postgresql+psycopg://sovereign:${POSTGRES_PASSWORD:-sovereign_secret}@postgres:5432/sovereign_db
+      REDIS_URL: redis://redis:6379/0
+      REDIS_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      celery -A worker.celery_app beat --loglevel=info
+
+volumes:
+  pgdata:
+  redisdata:

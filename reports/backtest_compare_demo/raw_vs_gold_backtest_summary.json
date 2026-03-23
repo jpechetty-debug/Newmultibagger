@@ -1,0 +1,45 @@
+{
+  "run_id": "backtest_compare_demo",
+  "run_ts_utc": "2026-03-10T11:59:15.283963+00:00",
+  "as_of_date": "2026-03-10",
+  "db_path": "stocks.db",
+  "raw_table": "multibaggers",
+  "gold_table": "multibaggers_gold",
+  "symbol_column": "symbol",
+  "score_column": "score",
+  "top_n": 20,
+  "period": "5y",
+  "raw_metrics": {
+    "symbols_in_universe": 20,
+    "symbols_with_backtest": 19,
+    "coverage_pct": 95.0,
+    "avg_cagr_pct": 15.0668,
+    "median_cagr_pct": 1.9,
+    "avg_win_rate_pct": 37.2805,
+    "avg_max_drawdown_pct": -24.0079,
+    "avg_sharpe": 0.3921,
+    "positive_cagr_share_pct": 52.6316
+  },
+  "gold_metrics": {
+    "symbols_in_universe": 20,
+    "symbols_with_backtest": 19,
+    "coverage_pct": 95.0,
+    "avg_cagr_pct": 15.0668,
+    "median_cagr_pct": 1.9,
+    "avg_win_rate_pct": 37.2805,
+    "avg_max_drawdown_pct": -24.0079,
+    "avg_sharpe": 0.3921,
+    "positive_cagr_share_pct": 52.6316
+  },
+  "delta_metrics": {
+    "symbols_in_universe": 0.0,
+    "symbols_with_backtest": 0.0,
+    "coverage_pct": 0.0,
+    "avg_cagr_pct": 0.0,
+    "median_cagr_pct": 0.0,
+    "avg_win_rate_pct": 0.0,
+    "avg_max_drawdown_pct": 0.0,
+    "avg_sharpe": 0.0,
+    "positive_cagr_share_pct": 0.0
+  }
+}

@@ -1,0 +1,15 @@
+--- Auditing Stock Universe ---
+Error reading Nifty 500 CSV: [Errno 2] No such file or directory: 'D:\\Tradeidesa\\Multibagger\\MW-NIFTY-500-12-Feb-2026.csv'
+Error reading Microcap 250 CSV: [Errno 2] No such file or directory: 'D:\\Tradeidesa\\Multibagger\\MW-NIFTY-MICROCAP-250-12-Feb-2026.csv'
+Current ticker_list.py Raw Count: 860
+Current ticker_list.py Unique Count: 857
+DUPLICATES FOUND (3): KPIL.NS, SOBHA.NS, RITES.NS
+User Picks (Outside Indices): 857
+Total Combined Universe: 857
+Target: 818
+Difference: -39
+
+[MISMATCH] Breakdown:
+Nifty 500: 0
+Microcap 250: 0
+User Picks unique: 857

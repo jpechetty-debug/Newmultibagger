@@ -1,0 +1,5 @@
+symbol,as_of_date,price,sector,score,sales_cagr_5y,avg_roe_5y,pe_ratio,debt_equity,market_cap_cr,cfo_pat_ratio,source_updated_at,created_at,as_of_age_days,flag_inf_any_numeric,flag_extreme_pe,flag_extreme_roe,flag_extreme_sales_cagr,flag_stale,flag_any_issue
+SPORTKING.NS,2026-02-24,115.9800033569336,Unknown,65.0,13.25,26.4,0.0,0.58,1490.0,1.1,2026-02-24 08:13:44,2026-02-24 02:43:44,14,False,False,False,False,False,False
+TEST_PERSIST_195750,2026-03-03,1.0,Unknown,10.0,,,,,,,2026-03-03 19:57:50,2026-03-03 14:27:50,7,False,False,False,False,False,False
+PACEDIGITK.NS,2026-03-03,171.5,Unknown,14.9,0.0,0.0,0.0,0.0,0.0,0.0,2026-03-03 20:17:37,2026-03-03 14:47:37,7,False,False,False,False,False,False
+MAHABANK.NS,2026-03-05,71.38999938964844,Unknown,43.8,18.88,16.12,0.0,0.0,0.0,0.0,2026-03-05 17:18:25,2026-03-05 11:48:25,5,False,False,False,False,False,False

@@ -1,0 +1,22 @@
+[
+  {
+    "table_name": "multibaggers",
+    "code": "HIGH_WARNING_SHARE",
+    "severity": "warning",
+    "metric": "warning_share_pct",
+    "current_value": 99.5074,
+    "baseline_value": null,
+    "threshold": 80.0,
+    "message": "Warning share 99.51% exceeds threshold 80.00%."
+  },
+  {
+    "table_name": "fundamentals_pit",
+    "code": "HIGH_WARNING_SHARE",
+    "severity": "warning",
+    "metric": "warning_share_pct",
+    "current_value": 99.8413,
+    "baseline_value": null,
+    "threshold": 80.0,
+    "message": "Warning share 99.84% exceeds threshold 80.00%."
+  }
+]

@@ -1,0 +1,29 @@
+{
+    "SPORTKING.NS": {
+        "symbol": "SPORTKING.NS",
+        "company_name": "Sportking India",
+        "consensus": "Strong Buy",
+        "analyst_count": 35,
+        "buy_percent": 83,
+        "hold_percent": 8,
+        "sell_percent": 8,
+        "target_high": 150.0,
+        "target_median": 117.0,
+        "target_low": 85.0,
+        "upside_potential_pct": 28.2,
+        "time_horizon_months": 8,
+        "source": "Institutional Manual Seed",
+        "as_of": "2026-02-20",
+        "fundamentals_override": {
+            "Market_Cap_Cr": 1490.0,
+            "ROE%": 11.45,
+            "Avg_ROE_5Y%": 26.4,
+            "Debt_Equity": 0.58,
+            "Sales_Growth_5Y%": 13.25,
+            "Sales_Growth_TTM%": 6.19,
+            "Profit_Margin%": 8.5,
+            "CFO_PAT_Ratio": 1.1,
+            "F_Score": 7
+        }
+    }
+}

@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "sprint_name": "Institutional Readiness Sprint",
+  "gates": [
+    {
+      "id": "resilience",
+      "name": "Infrastructure Resilience",
+      "weight": 0.2,
+      "target": 9.0,
+      "hard_cap_without_evidence": 6.5,
+      "hard_cap_reason": "No dedicated automated 10x concurrency and failure-injection test harness found."
+    },
+    {
+      "id": "risk",
+      "name": "Risk Containment Strength",
+      "weight": 0.2,
+      "target": 9.0,
+      "hard_cap_without_evidence": 7.0,
+      "hard_cap_reason": "No full adversarial scenario replay pipeline (regime flip, gap-down, slippage expansion, correlation spike) found."
+    },
+    {
+      "id": "performance",
+      "name": "Alpha Durability",
+      "weight": 0.2,
+      "target": 9.0,
+      "hard_cap_without_evidence": 4.0,
+      "hard_cap_reason": "No integrated Monte Carlo (1000-path) and forward degradation pipeline found."
+    },
+    {
+      "id": "audit",
+      "name": "Audit Integrity",
+      "weight": 0.2,
+      "target": 9.0,
+      "hard_cap_without_evidence": 5.0,
+      "hard_cap_reason": "Point-in-time fundamentals database not implemented; only fail-fast guard is present."
+    },
+    {
+      "id": "operations",
+      "name": "Execution and Operational Reliability",
+      "weight": 0.2,
+      "target": 9.0,
+      "hard_cap_without_evidence": 7.0,
+      "hard_cap_reason": "No reconciliation/idempotency OMS layer with external execution ack lifecycle found."
+    }
+  ]
+}

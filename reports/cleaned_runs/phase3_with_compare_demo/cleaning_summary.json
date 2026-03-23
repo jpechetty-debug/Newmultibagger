@@ -1,0 +1,383 @@
+{
+  "config": {
+    "db_path": "stocks.db",
+    "rules_path": "ops\\cleaning_rules.yaml",
+    "out_dir": "reports\\cleaned_runs\\phase3_with_compare_demo",
+    "as_of_date": "2026-03-10",
+    "tables": [
+      "multibaggers",
+      "fundamentals_pit"
+    ],
+    "filter_mode": "hard_fail_only",
+    "refresh": {
+      "enabled": true,
+      "source_table": "fundamentals_pit",
+      "source_key_column": "symbol",
+      "source_date_column": "as_of_date",
+      "target_key_column": "symbol",
+      "target_date_column": "as_of_date",
+      "target_tables": [
+        "multibaggers"
+      ],
+      "min_age_days": 7,
+      "require_newer_source": true,
+      "allow_fill_missing_when_stale": true,
+      "overwrite_non_null": true,
+      "update_columns": [
+        "price",
+        "sector",
+        "score",
+        "sales_cagr_5y",
+        "avg_roe_5y",
+        "pe_ratio",
+        "debt_equity",
+        "market_cap_cr",
+        "cfo_pat_ratio"
+      ]
+    },
+    "monitor": {
+      "enabled": true,
+      "thresholds": {
+        "warning_share_max_pct": 80.0,
+        "hard_fail_share_max_pct": 5.0,
+        "null_spike_abs_pct": 5.0,
+        "hard_fail_spike_rel": 0.5,
+        "rule_spike_rel": 0.5
+      },
+      "critical_columns": {
+        "multibaggers": [
+          "as_of_date",
+          "score",
+          "pe_ratio",
+          "sales_cagr_5y",
+          "avg_roe_5y",
+          "sector"
+        ],
+        "fundamentals_pit": [
+          "as_of_date",
+          "score",
+          "pe_ratio",
+          "sales_cagr_5y",
+          "avg_roe_5y",
+          "sector"
+        ]
+      }
+    },
+    "baseline_summary": "reports\\cleaned_runs\\phase3_wrapper_demo2\\cleaning_summary.json",
+    "run_id": "phase3_with_compare_demo",
+    "write_db": true
+  },
+  "tables": {
+    "multibaggers": {
+      "rows_input": 812,
+      "rows_cleaned": 812,
+      "rows_filtered": 791,
+      "removed_rows": 21,
+      "filter_mode": "hard_fail_only",
+      "refresh": {
+        "enabled": true,
+        "applied": true,
+        "table_eligible": true,
+        "rows_refreshed": 0,
+        "rows_filled_missing_from_source": 0,
+        "rows_stale_eligible": 809,
+        "rows_with_source_match": 812,
+        "rows_with_newer_source": 0,
+        "fields_updated_total": 0,
+        "field_updates_by_column": {},
+        "update_columns_considered": [
+          "price",
+          "sector",
+          "score",
+          "sales_cagr_5y",
+          "avg_roe_5y",
+          "pe_ratio",
+          "debt_equity",
+          "market_cap_cr",
+          "cfo_pat_ratio"
+        ]
+      },
+      "null_profile": {
+        "as_of_date": {
+          "null_count": 0,
+          "null_pct": 0.0
+        },
+        "score": {
+          "null_count": 5,
+          "null_pct": 0.62
+        },
+        "pe_ratio": {
+          "null_count": 1,
+          "null_pct": 0.12
+        },
+        "sales_cagr_5y": {
+          "null_count": 448,
+          "null_pct": 55.17
+        },
+        "avg_roe_5y": {
+          "null_count": 1,
+          "null_pct": 0.12
+        },
+        "sector": {
+          "null_count": 0,
+          "null_pct": 0.0
+        }
+      },
+      "row_state_counts": {
+        "rows_with_hard_fail": 21,
+        "rows_with_warning": 808,
+        "rows_with_warning_only": 787,
+        "rows_with_any_issue": 808,
+        "rows_without_issue": 4
+      },
+      "rules": {
+        "INF_ANY_NUMERIC": {
+          "category": "hard_fail",
+          "type": "inf_any_numeric",
+          "trigger_count": 1,
+          "trigger_pct": 0.12,
+          "applied": true
+        },
+        "EXTREME_PE_SECTOR_P995": {
+          "category": "hard_fail",
+          "type": "group_percentile_upper",
+          "trigger_count": 8,
+          "trigger_pct": 0.99,
+          "applied": true,
+          "column": "pe_ratio",
+          "evaluated_columns": [
+            "pe_ratio"
+          ],
+          "missing_columns": [],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 500.0,
+          "threshold_columns": [
+            "threshold_extreme_pe_sector_p995_pe_ratio"
+          ]
+        },
+        "EXTREME_ROE_SECTOR_P995": {
+          "category": "hard_fail",
+          "type": "group_percentile_abs",
+          "trigger_count": 13,
+          "trigger_pct": 1.6,
+          "applied": true,
+          "columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "evaluated_columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "missing_columns": [],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 300.0,
+          "threshold_columns": [
+            "threshold_extreme_roe_sector_p995_roe",
+            "threshold_extreme_roe_sector_p995_avg_roe_5y"
+          ]
+        },
+        "HIGH_SALES_CAGR_SECTOR_P995": {
+          "category": "warning",
+          "type": "group_percentile_abs",
+          "trigger_count": 6,
+          "trigger_pct": 0.74,
+          "applied": true,
+          "column": "sales_cagr_5y",
+          "evaluated_columns": [
+            "sales_cagr_5y"
+          ],
+          "missing_columns": [],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 600.0,
+          "threshold_columns": [
+            "threshold_high_sales_cagr_sector_p995_sales_cagr_5y"
+          ]
+        },
+        "STALE_AS_OF_DATE": {
+          "category": "warning",
+          "type": "max_age_days",
+          "trigger_count": 808,
+          "trigger_pct": 99.51,
+          "applied": true,
+          "threshold": 14.0,
+          "column": "as_of_date",
+          "evaluated_columns": [
+            "as_of_date"
+          ],
+          "age_output_column": "as_of_age_days"
+        }
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned_runs\\phase3_with_compare_demo\\multibaggers_cleaned.csv",
+        "filtered": "reports\\cleaned_runs\\phase3_with_compare_demo\\multibaggers_cleaned_filtered.csv"
+      },
+      "db_tables": {
+        "cleaned": "multibaggers_cleaned",
+        "gold": "multibaggers_gold"
+      }
+    },
+    "fundamentals_pit": {
+      "rows_input": 2521,
+      "rows_cleaned": 2521,
+      "rows_filtered": 2493,
+      "removed_rows": 28,
+      "filter_mode": "hard_fail_only",
+      "refresh": {
+        "enabled": true,
+        "applied": false,
+        "table_eligible": false,
+        "rows_refreshed": 0,
+        "rows_filled_missing_from_source": 0,
+        "rows_stale_eligible": 0,
+        "rows_with_source_match": 0,
+        "rows_with_newer_source": 0,
+        "fields_updated_total": 0,
+        "field_updates_by_column": {}
+      },
+      "null_profile": {
+        "as_of_date": {
+          "null_count": 0,
+          "null_pct": 0.0
+        },
+        "score": {
+          "null_count": 1015,
+          "null_pct": 40.26
+        },
+        "pe_ratio": {
+          "null_count": 1,
+          "null_pct": 0.04
+        },
+        "sales_cagr_5y": {
+          "null_count": 1444,
+          "null_pct": 57.28
+        },
+        "avg_roe_5y": {
+          "null_count": 2,
+          "null_pct": 0.08
+        },
+        "sector": {
+          "null_count": 0,
+          "null_pct": 0.0
+        }
+      },
+      "row_state_counts": {
+        "rows_with_hard_fail": 28,
+        "rows_with_warning": 2517,
+        "rows_with_warning_only": 2489,
+        "rows_with_any_issue": 2517,
+        "rows_without_issue": 4
+      },
+      "rules": {
+        "INF_ANY_NUMERIC": {
+          "category": "hard_fail",
+          "type": "inf_any_numeric",
+          "trigger_count": 3,
+          "trigger_pct": 0.12,
+          "applied": true
+        },
+        "EXTREME_PE_SECTOR_P995": {
+          "category": "hard_fail",
+          "type": "group_percentile_upper",
+          "trigger_count": 19,
+          "trigger_pct": 0.75,
+          "applied": true,
+          "column": "pe_ratio",
+          "evaluated_columns": [
+            "pe_ratio"
+          ],
+          "missing_columns": [],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 500.0,
+          "threshold_columns": [
+            "threshold_extreme_pe_sector_p995_pe_ratio"
+          ]
+        },
+        "EXTREME_ROE_SECTOR_P995": {
+          "category": "hard_fail",
+          "type": "group_percentile_abs",
+          "trigger_count": 6,
+          "trigger_pct": 0.24,
+          "applied": true,
+          "columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "evaluated_columns": [
+            "avg_roe_5y"
+          ],
+          "missing_columns": [
+            "roe"
+          ],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 300.0,
+          "threshold_columns": [
+            "threshold_extreme_roe_sector_p995_avg_roe_5y"
+          ]
+        },
+        "HIGH_SALES_CAGR_SECTOR_P995": {
+          "category": "warning",
+          "type": "group_percentile_abs",
+          "trigger_count": 1,
+          "trigger_pct": 0.04,
+          "applied": true,
+          "column": "sales_cagr_5y",
+          "evaluated_columns": [
+            "sales_cagr_5y"
+          ],
+          "missing_columns": [],
+          "group_by": "sector",
+          "group_by_missing": false,
+          "percentile": 0.995,
+          "min_group_size": 30,
+          "fallback_threshold": 600.0,
+          "threshold_columns": [
+            "threshold_high_sales_cagr_sector_p995_sales_cagr_5y"
+          ]
+        },
+        "STALE_AS_OF_DATE": {
+          "category": "warning",
+          "type": "max_age_days",
+          "trigger_count": 2517,
+          "trigger_pct": 99.84,
+          "applied": true,
+          "threshold": 14.0,
+          "column": "as_of_date",
+          "evaluated_columns": [
+            "as_of_date"
+          ],
+          "age_output_column": "as_of_age_days"
+        }
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned_runs\\phase3_with_compare_demo\\fundamentals_pit_cleaned.csv",
+        "filtered": "reports\\cleaned_runs\\phase3_with_compare_demo\\fundamentals_pit_cleaned_filtered.csv"
+      },
+      "db_tables": {
+        "cleaned": "fundamentals_pit_cleaned",
+        "gold": "fundamentals_pit_gold"
+      }
+    }
+  },
+  "alerts": {
+    "count": 2,
+    "by_severity": {
+      "warning": 2
+    }
+  }
+}

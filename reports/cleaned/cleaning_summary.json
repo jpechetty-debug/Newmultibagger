@@ -1,0 +1,53 @@
+{
+  "config": {
+    "db_path": "stocks.db",
+    "out_dir": "reports\\cleaned",
+    "max_age_days": 14,
+    "pe_max": 200.0,
+    "roe_abs_max": 200.0,
+    "sales_cagr_abs_max": 500.0,
+    "as_of_date": "2026-03-10",
+    "tables": [
+      "multibaggers",
+      "fundamentals_pit"
+    ]
+  },
+  "tables": {
+    "multibaggers": {
+      "rows_input": 812,
+      "rows_cleaned": 812,
+      "rows_filtered": 4,
+      "removed_rows": 808,
+      "rules_trigger_count": {
+        "inf_any_numeric": 1,
+        "extreme_pe": 18,
+        "extreme_roe": 3,
+        "extreme_sales_cagr": 1,
+        "stale": 808,
+        "any_issue": 808
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned\\multibaggers_cleaned.csv",
+        "filtered": "reports\\cleaned\\multibaggers_cleaned_filtered.csv"
+      }
+    },
+    "fundamentals_pit": {
+      "rows_input": 2521,
+      "rows_cleaned": 2521,
+      "rows_filtered": 4,
+      "removed_rows": 2517,
+      "rules_trigger_count": {
+        "inf_any_numeric": 3,
+        "extreme_pe": 59,
+        "extreme_roe": 18,
+        "extreme_sales_cagr": 3,
+        "stale": 2517,
+        "any_issue": 2517
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned\\fundamentals_pit_cleaned.csv",
+        "filtered": "reports\\cleaned\\fundamentals_pit_cleaned_filtered.csv"
+      }
+    }
+  }
+}

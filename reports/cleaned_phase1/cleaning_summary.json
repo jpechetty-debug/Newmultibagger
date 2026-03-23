@@ -1,0 +1,182 @@
+{
+  "config": {
+    "db_path": "stocks.db",
+    "rules_path": "ops\\cleaning_rules.yaml",
+    "out_dir": "reports\\cleaned_phase1",
+    "as_of_date": "2026-03-10",
+    "tables": [
+      "multibaggers",
+      "fundamentals_pit"
+    ],
+    "filter_mode": "hard_fail_only"
+  },
+  "tables": {
+    "multibaggers": {
+      "rows_input": 812,
+      "rows_cleaned": 812,
+      "rows_filtered": 790,
+      "removed_rows": 22,
+      "filter_mode": "hard_fail_only",
+      "row_state_counts": {
+        "rows_with_hard_fail": 22,
+        "rows_with_warning": 808,
+        "rows_with_warning_only": 786,
+        "rows_with_any_issue": 808,
+        "rows_without_issue": 4
+      },
+      "rules": {
+        "INF_ANY_NUMERIC": {
+          "category": "hard_fail",
+          "type": "inf_any_numeric",
+          "trigger_count": 1,
+          "trigger_pct": 0.12,
+          "applied": true
+        },
+        "EXTREME_PE": {
+          "category": "hard_fail",
+          "type": "threshold_upper",
+          "trigger_count": 18,
+          "trigger_pct": 2.22,
+          "applied": true,
+          "threshold": 200.0,
+          "column": "pe_ratio",
+          "evaluated_columns": [
+            "pe_ratio"
+          ],
+          "missing_columns": []
+        },
+        "EXTREME_ROE": {
+          "category": "hard_fail",
+          "type": "threshold_abs",
+          "trigger_count": 3,
+          "trigger_pct": 0.37,
+          "applied": true,
+          "threshold": 200.0,
+          "columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "evaluated_columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "missing_columns": []
+        },
+        "EXTREME_SALES_CAGR": {
+          "category": "hard_fail",
+          "type": "threshold_abs",
+          "trigger_count": 1,
+          "trigger_pct": 0.12,
+          "applied": true,
+          "threshold": 500.0,
+          "column": "sales_cagr_5y",
+          "evaluated_columns": [
+            "sales_cagr_5y"
+          ],
+          "missing_columns": []
+        },
+        "STALE_AS_OF_DATE": {
+          "category": "warning",
+          "type": "max_age_days",
+          "trigger_count": 808,
+          "trigger_pct": 99.51,
+          "applied": true,
+          "threshold": 14.0,
+          "column": "as_of_date",
+          "evaluated_columns": [
+            "as_of_date"
+          ],
+          "age_output_column": "as_of_age_days"
+        }
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned_phase1\\multibaggers_cleaned.csv",
+        "filtered": "reports\\cleaned_phase1\\multibaggers_cleaned_filtered.csv"
+      }
+    },
+    "fundamentals_pit": {
+      "rows_input": 2521,
+      "rows_cleaned": 2521,
+      "rows_filtered": 2441,
+      "removed_rows": 80,
+      "filter_mode": "hard_fail_only",
+      "row_state_counts": {
+        "rows_with_hard_fail": 80,
+        "rows_with_warning": 2517,
+        "rows_with_warning_only": 2437,
+        "rows_with_any_issue": 2517,
+        "rows_without_issue": 4
+      },
+      "rules": {
+        "INF_ANY_NUMERIC": {
+          "category": "hard_fail",
+          "type": "inf_any_numeric",
+          "trigger_count": 3,
+          "trigger_pct": 0.12,
+          "applied": true
+        },
+        "EXTREME_PE": {
+          "category": "hard_fail",
+          "type": "threshold_upper",
+          "trigger_count": 59,
+          "trigger_pct": 2.34,
+          "applied": true,
+          "threshold": 200.0,
+          "column": "pe_ratio",
+          "evaluated_columns": [
+            "pe_ratio"
+          ],
+          "missing_columns": []
+        },
+        "EXTREME_ROE": {
+          "category": "hard_fail",
+          "type": "threshold_abs",
+          "trigger_count": 18,
+          "trigger_pct": 0.71,
+          "applied": true,
+          "threshold": 200.0,
+          "columns": [
+            "roe",
+            "avg_roe_5y"
+          ],
+          "evaluated_columns": [
+            "avg_roe_5y"
+          ],
+          "missing_columns": [
+            "roe"
+          ]
+        },
+        "EXTREME_SALES_CAGR": {
+          "category": "hard_fail",
+          "type": "threshold_abs",
+          "trigger_count": 3,
+          "trigger_pct": 0.12,
+          "applied": true,
+          "threshold": 500.0,
+          "column": "sales_cagr_5y",
+          "evaluated_columns": [
+            "sales_cagr_5y"
+          ],
+          "missing_columns": []
+        },
+        "STALE_AS_OF_DATE": {
+          "category": "warning",
+          "type": "max_age_days",
+          "trigger_count": 2517,
+          "trigger_pct": 99.84,
+          "applied": true,
+          "threshold": 14.0,
+          "column": "as_of_date",
+          "evaluated_columns": [
+            "as_of_date"
+          ],
+          "age_output_column": "as_of_age_days"
+        }
+      },
+      "output_files": {
+        "cleaned": "reports\\cleaned_phase1\\fundamentals_pit_cleaned.csv",
+        "filtered": "reports\\cleaned_phase1\\fundamentals_pit_cleaned_filtered.csv"
+      }
+    }
+  }
+}

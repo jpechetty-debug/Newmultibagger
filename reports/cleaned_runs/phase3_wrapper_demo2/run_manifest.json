@@ -1,0 +1,14 @@
+{
+  "run_id": "phase3_wrapper_demo2",
+  "run_ts_utc": "2026-03-10T11:54:41.786975+00:00",
+  "out_dir": "reports\\cleaned_runs\\phase3_wrapper_demo2",
+  "summary_path": "reports\\cleaned_runs\\phase3_wrapper_demo2\\cleaning_summary.json",
+  "alerts_path": "reports\\cleaned_runs\\phase3_wrapper_demo2\\cleaning_alerts.json",
+  "baseline_summary": "reports\\cleaned_runs\\phase3_wrapper_demo\\cleaning_summary.json",
+  "alert_count": 2,
+  "write_db": true,
+  "tables": [
+    "multibaggers",
+    "fundamentals_pit"
+  ]
+}

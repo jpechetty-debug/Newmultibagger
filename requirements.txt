@@ -1,0 +1,22 @@
+nsepython>=2.97
+pnsea>=1.0.1
+nsepythonserver
+aiohttp
+fastapi
+uvicorn
+yfinance
+pandas
+numpy
+scipy
+PyYAML
+
+# v3.0+ ML & AI
+xgboost
+shap
+vectorbt
+
+# v4.0 Infrastructure
+sqlalchemy>=2.0
+psycopg[binary]
+redis
+celery[redis]

@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Audit Report · SPORTKING.NS</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8D49A;
+            --dark: #0A0E17;
+            --dark-2: #111827;
+            --dark-3: #1C2535;
+            --border: rgba(201, 168, 76, 0.2);
+            --green: #22C55E;
+            --red: #EF4444;
+            --blue: #3B82F6;
+            --text: #E2E8F0;
+            --muted: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark);
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-weight: 300;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0A0E17 0%, #111827 50%, #0F1A2E 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 60px 40px 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-tag::before {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .hero h1 span {
+            color: var(--gold);
+        }
+
+        .hero-sub {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 36px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            max-width: 900px;
+        }
+
+        .hero-stat {
+            background: var(--dark-2);
+            padding: 20px 24px;
+        }
+
+        .hero-stat .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .hero-stat .value {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .hero-stat .value.gold {
+            color: var(--gold);
+        }
+
+        .hero-stat .value.green {
+            color: var(--green);
+        }
+
+        .hero-stat .change {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+            margin-top: 2px;
+        }
+
+        /* VERDICT BANNER */
+        .verdict {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.04) 100%);
+            border-left: 4px solid var(--green);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .verdict-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .verdict-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .verdict-pill {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--green);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            padding: 4px 14px;
+            border-radius: 2px;
+            letter-spacing: 1px;
+        }
+
+        /* MAIN LAYOUT */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 52px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-num {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* CHECKLIST */
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .check-row {
+            display: grid;
+            grid-template-columns: 1fr 120px 140px 80px;
+            gap: 1px;
+            background: var(--dark-2);
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .check-row:hover {
+            border-color: var(--border);
+        }
+
+        .check-row.header {
+            background: var(--dark-3);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .check-cell {
+            padding: 14px 18px;
+            font-size: 13px;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .check-cell:last-child {
+            border-right: none;
+        }
+
+        .check-criterion {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .check-threshold {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .check-actual {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .pass {
+            color: var(--green);
+        }
+
+        .fail {
+            color: var(--red);
+        }
+
+        .review {
+            color: #F59E0B;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .badge-pass {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .badge-fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .badge-review {
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        /* QUARTERLY */
+        .quarterly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .q-card {
+            background: var(--dark-2);
+            padding: 20px 18px;
+            position: relative;
+        }
+
+        .q-period {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .q-rev {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .q-rev-val {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .q-profit {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .q-profit-val {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--green);
+        }
+
+        .q-growth {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 2px;
+        }
+
+        .q-growth.up {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+        }
+
+        .q-growth.down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+        }
+
+        /* ANALYST */
+        .analyst-box {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            padding: 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+
+        .analyst-item .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .analyst-item .big {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .analyst-item .big.green {
+            color: var(--green);
+        }
+
+        .analyst-reco {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            padding: 10px 18px;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .analyst-reco .reco-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .analyst-reco .reco-sub {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        /* THESIS */
+        .thesis-box {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            padding: 30px;
+            font-size: 15px;
+            color: #E2E8F0;
+            line-height: 1.8;
+            border-left: 3px solid var(--gold);
+        }
+
+        /* EXECUTION MONITOR */
+        .exec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .exec-cell {
+            background: var(--dark-2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .exec-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .exec-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .exec-status {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+            margin-top: 4px;
+        }
+
+        /* VALUATION */
+        .valuation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .val-card {
+            background: var(--dark-2);
+            padding: 22px 24px;
+        }
+
+        .val-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .val-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .val-mos {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        /* SHAREHOLDING */
+        .share-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .share-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .share-pct {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .bar-track {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 1s ease;
+        }
+
+        .bar-fill.gold {
+            background: var(--gold);
+        }
+
+        .bar-fill.blue {
+            background: var(--blue);
+        }
+
+        .bar-fill.slate {
+            background: #64748B;
+        }
+
+        /* RISKS */
+        .risks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .risk-item {
+            background: var(--dark-2);
+            padding: 20px 24px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .risk-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 7px;
+            flex-shrink: 0;
+        }
+
+        .risk-dot.red {
+            background: var(--red);
+        }
+
+        .risk-dot.green {
+            background: var(--green);
+        }
+
+        .risk-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .risk-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* TARGET ZONE */
+        .target-box {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            gap: 0;
+            align-items: center;
+            text-align: center;
+        }
+
+        .target-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .target-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .target-price.current {
+            color: var(--text);
+        }
+
+        .target-price.conservative {
+            color: #F59E0B;
+        }
+
+        .target-price.optimistic {
+            color: var(--green);
+        }
+
+        .target-upside {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: var(--border);
+            padding: 0 20px;
+        }
+
+        /* DIVIDEND */
+        .dividend-banner {
+            background: linear-gradient(90deg, rgba(201, 168, 76, 0.08), rgba(201, 168, 76, 0.03));
+            border: 1px solid var(--border);
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .div-item .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .div-item .val {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* FINAL VERDICT */
+        .final-verdict-box {
+            background: var(--dark-2);
+            border: 2px solid var(--green);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-verdict-box::before {
+            content: 'APPROVED';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 120px;
+            font-weight: 700;
+            color: rgba(34, 197, 94, 0.05);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .fv-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .fv-result {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--green);
+            margin-bottom: 10px;
+        }
+
+        .fv-sub {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 30px;
+        }
+
+        .fv-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .fv-cell {
+            background: #0F1A2E;
+            padding: 16px;
+        }
+
+        .fv-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .fv-val {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .highlight {
+            color: var(--gold);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="hero">
+        <div class="hero-tag">Investment Audit Report &nbsp;•&nbsp; Mar 14, 2026</div>
+        <h1>
+            Sportking India Limited
+        </h1>
+        <div class="hero-sub">SPORTKING.NS &nbsp;|&nbsp; Consumer Cyclical &nbsp;|&nbsp; Textile Manufacturing</div>
+
+        <div class="hero-grid">
+            <div class="hero-stat">
+                <div class="label">Current Price</div>
+                <div class="value">₹108.15</div>
+                <div class="change">▲ +8.87% (50d avg)</div>
+            </div>
+            <div class="hero-stat">
+                <div class="label">Market Cap</div>
+                <div class="value">₹1,490 Cr</div>
+            </div>
+            <div class="hero-stat">
+                <div class="label">Intrinsic Value</div>
+                <div class="value gold">₹131.68</div>
+            </div>
+            <div class="hero-stat">
+                <div class="label">Margin of Safety</div>
+                <div class="value green">17.9%</div>
+            </div>
+            <div class="hero-stat">
+                <div class="label">P/E Ratio</div>
+                <div class="value">11.64×</div>
+            </div>
+            <div class="hero-stat">
+                <div class="label">52-Week Range</div>
+                <div class="value" style="font-size: 20px;">₹76.00 – ₹140.00</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="verdict">
+        <div class="verdict-label">Overall Verdict</div>
+        <div class="verdict-text">NEUTRAL</div>
+        <div class="verdict-pill">14 ANALYSTS</div>
+        <div class="verdict-pill">17.9% MARGIN OF SAFETY</div>
+        <div class="verdict-pill">DEEP VALUE</div>
+        <div class="verdict-pill">BULLISH MOMENTUM</div>
+    </div>
+
+    <main class="main">
+
+        <!-- 01 CHECKLIST -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">01</span>
+                <h2 class="section-title">8-Point Investment Checklist</h2>
+            </div>
+            <div class="checklist">
+                <div class="check-row header">
+                    <div class="check-cell">Criterion</div>
+                    <div class="check-cell">Threshold</div>
+                    <div class="check-cell">Actual Value</div>
+                    <div class="check-cell">Status</div>
+                </div>
+                <!-- Loop through checklist logic here in Python/Jinja usually, simplified static example for template -->
+                
+                <div class="check-row">
+                    <div class="check-cell check-criterion">Return on Equity (ROE)</div>
+                    <div class="check-cell check-threshold">> 15%</div>
+                    <div class="check-cell check-actual fail">11.4%</div>
+                    <div class="check-cell">
+                        <span class="badge badge-fail">
+                            ✗ FAIL
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="check-row">
+                    <div class="check-cell check-criterion">Debt to Equity</div>
+                    <div class="check-cell check-threshold">< 1.0</div>
+                    <div class="check-cell check-actual pass">0.58</div>
+                    <div class="check-cell">
+                        <span class="badge badge-pass">
+                            ✓ PASS
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="check-row">
+                    <div class="check-cell check-criterion">Sales Growth (YoY)</div>
+                    <div class="check-cell check-threshold">> 10%</div>
+                    <div class="check-cell check-actual fail">6.2%</div>
+                    <div class="check-cell">
+                        <span class="badge badge-fail">
+                            ✗ FAIL
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="check-row">
+                    <div class="check-cell check-criterion">Profit Growth (YoY)</div>
+                    <div class="check-cell check-threshold">> 15%</div>
+                    <div class="check-cell check-actual pass">51.6%</div>
+                    <div class="check-cell">
+                        <span class="badge badge-pass">
+                            ✓ PASS
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="check-row">
+                    <div class="check-cell check-criterion">Promoter Holding</div>
+                    <div class="check-cell check-threshold">> 40%</div>
+                    <div class="check-cell check-actual pass">79.0%</div>
+                    <div class="check-cell">
+                        <span class="badge badge-pass">
+                            ✓ PASS
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+            <p style="margin-top: 14px; font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace;">
+                Analysis based on latest financial statements.</p>
+        </section>
+
+        <!-- 02 QUARTERLY -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">02</span>
+                <h2 class="section-title">Quarterly Performance Trend</h2>
+            </div>
+            <div class="quarterly-grid">
+                
+                <div class="q-card">
+                    <div class="q-period">Q2 FY25 </div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">0 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">0 Cr</div>
+                    
+                </div>
+                
+                <div class="q-card">
+                    <div class="q-period">Q3 FY25 </div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">610 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">18 Cr</div>
+                    
+                </div>
+                
+                <div class="q-card">
+                    <div class="q-period">Q4 FY25 </div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">562 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">36 Cr</div>
+                    
+                    <div class="q-growth down">
+                        -7.9%
+                    </div>
+                    
+                </div>
+                
+                <div class="q-card">
+                    <div class="q-period">Q1 FY26 </div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">586 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">35 Cr</div>
+                    
+                    <div class="q-growth up">
+                        +4.3%
+                    </div>
+                    
+                </div>
+                
+                <div class="q-card">
+                    <div class="q-period">Q2 FY26 </div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">627 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">28 Cr</div>
+                    
+                    <div class="q-growth up">
+                        +7.0%
+                    </div>
+                    
+                </div>
+                
+                <div class="q-card">
+                    <div class="q-period">Q3 FY26 ★</div>
+                    <div class="q-rev">Revenue</div>
+                    <div class="q-rev-val">646 Cr</div>
+                    <div class="q-profit">Net Profit</div>
+                    <div class="q-profit-val">25 Cr</div>
+                    
+                    <div class="q-growth up">
+                        +3.0%
+                    </div>
+                    
+                </div>
+                
+            </div>
+            <p style="margin-top: 14px; font-size: 13px; color: var(--muted);">Consistency: <strong
+                    class="text-white">HIGH</strong>.</p>
+        </section>
+
+        <!-- 03 ANALYST -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">03</span>
+                <h2 class="section-title">Analyst Consensus</h2>
+            </div>
+            <div class="analyst-box">
+                <div class="analyst-item">
+                    <div class="label">Analysts Covering</div>
+                    <div class="big">14</div>
+                    <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Active coverage</div>
+                </div>
+                <div class="analyst-item">
+                    <div class="label">Average Target Price</div>
+                    <div class="big gold">₹150.00</div>
+                    <div style="font-size: 12px; color: var(--green); margin-top: 4px;">38.7% upside
+                    </div>
+                </div>
+                <div class="analyst-item">
+                    <div class="label">Recommendation</div>
+                    <div class="analyst-reco">
+                        <div class="reco-text">STRONG BUY</div>
+                        <div class="reco-sub">consensus · 14 analysts</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 04 THESIS -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">04</span>
+                <h2 class="section-title">Investment Thesis</h2>
+            </div>
+            <div class="thesis-box">
+                <h3
+                    style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px;">
+                    Market Leadership in Core Segment</h3>
+                <ul style="list-style: none; color: #E2E8F0; font-size: 15px;">
+                    
+                    <li style="margin-bottom: 8px;">• Dominant footprint within the Textile Manufacturing space.</li>
+                    
+                    <li style="margin-bottom: 8px;">• 11.4% Return on Equity, demonstrating strict capital efficiency.</li>
+                    
+                    <li style="margin-bottom: 8px;">• Consistent quarterly execution metrics.</li>
+                    
+                </ul>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <strong>Key Catalyst:</strong>
+                    <ul style="list-style: none; margin-top: 10px; color: var(--muted); font-size: 14px;">
+                        <li style="margin-bottom: 6px;"><span style="color: var(--gold); margin-right: 10px;">C1</span>
+                            Earnings beat or sustained margin expansion.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 05 EXECUTION -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">05</span>
+                <h2 class="section-title">Execution Quality Monitor (Live Feedback)</h2>
+            </div>
+            <div class="exec-grid">
+                <div class="exec-cell">
+                    <div class="exec-label">Liquidity Tier</div>
+                    <div class="exec-val">LARGE CAP</div>
+                </div>
+                <div class="exec-cell">
+                    <div class="exec-label">Modeled Slippage</div>
+                    <div class="exec-val" style="color: var(--gold);">200 bps</div>
+                </div>
+                <div class="exec-cell">
+                    <div class="exec-label">Observed (p95)</div>
+                    <div class="exec-val">200 bps</div>
+                </div>
+            </div>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; background: var(--dark-2); padding: 14px 20px; border: 1px solid var(--border); border-top: none; margin-top: 1px;">
+                <div class="exec-status">Inflation Status: <strong style="color: #fff;">STABLE</strong></div>
+                <p style="font-size: 11px; color: var(--muted); max-width: 600px; text-align: right;">Running simulation
+                    confidence vs real-world fills. Risk models auto-tighten if observed slippage exceeds modeled
+                    parameters.</p>
+            </div>
+        </section>
+
+        <!-- 06 VALUATION -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">06</span>
+                <h2 class="section-title">Intrinsic Value & Margin of Safety</h2>
+            </div>
+            <div class="valuation-grid">
+                <div class="val-card">
+                    <div class="val-label">Current Price</div>
+                    <div class="val-price">₹108.15</div>
+                    <div style="font-size: 11px; color: var(--muted);">As of Mar 14, 2026</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">Graham Number</div>
+                    <div class="val-price" style="color: var(--gold);">₹131.68</div>
+                    <div class="val-mos">17.9% Margin of Safety</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">EPV (Earnings Power)</div>
+                    <div class="val-price">₹N/A</div>
+                    <div class="val-mos" style="color: var(--muted);">N/A% Margin of Safety</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">P/B Ratio</div>
+                    <div class="val-price" style="color: var(--blue);">1.30×</div>
+                    <div style="font-size: 11px; color: var(--muted);"></div>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- 07 SHAREHOLDING -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">07</span>
+                <h2 class="section-title">Shareholding Pattern</h2>
+            </div>
+            <div class="analyst-box">
+                <div style="grid-column: span 3;" class="share-bar-container">
+                    <div class="share-item">
+                        <div class="share-item-header">
+                            <span class="share-name">🏛 Government / Promoters</span>
+                            <span class="share-pct">79.05%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill gold" style="width: 79.05%;"></div>
+                        </div>
+                    </div>
+                    <div class="share-item">
+                        <div class="share-item-header">
+                            <span class="share-name">🏦 Institutional Investors (FII + DII)</span>
+                            <span class="share-pct">0.00%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill blue" style="width: 0.00%;"></div>
+                        </div>
+                    </div>
+                    <div class="share-item">
+                        <div class="share-item-header">
+                            <span class="share-name">👥 Public / Retail</span>
+                            <span class="share-pct">20.95%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill slate" style="width: 20.95%;"></div>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 10px;">Institutional holding is <strong
+                            style="color: #fff;">0.00%</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 08 GOVERNANCE -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">08</span>
+                <h2 class="section-title">Red Flags & Governance (ISS Risk Scores)</h2>
+            </div>
+            <div class="risks">
+                <div class="risk-item">
+                    <div
+                        class="risk-dot green">
+                    </div>
+                    <div>
+                        <div class="risk-title">Overall ISS Risk</div>
+                        <div class="risk-desc">Score: N/A (1=Low, 10=High)</div>
+                    </div>
+                </div>
+                <div class="risk-item">
+                    <div
+                        class="risk-dot green">
+                    </div>
+                    <div>
+                        <div class="risk-title">Audit Risk</div>
+                        <div class="risk-desc">Score: N/A (1=Low, 10=High)</div>
+                    </div>
+                </div>
+                <div class="risk-item">
+                    <div
+                        class="risk-dot green">
+                    </div>
+                    <div>
+                        <div class="risk-title">Board Risk</div>
+                        <div class="risk-desc">Score: N/A (1=Low, 10=High)</div>
+                    </div>
+                </div>
+                <div class="risk-item">
+                    <div
+                        class="risk-dot green">
+                    </div>
+                    <div>
+                        <div class="risk-title">Shareholder Rights Risk</div>
+                        <div class="risk-desc">Score: N/A (1=Low, 10=High)</div>
+                    </div>
+                </div>
+            </div>
+            <p style="margin-top: 14px; font-size: 13px; color: var(--muted);">Short Interest: <strong
+                    class="text-white">N/A</strong>.</p>
+        </section>
+
+        <!-- 09 TARGETS -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">09</span>
+                <h2 class="section-title">12-Month Price Target Scenarios</h2>
+            </div>
+            <div class="target-box">
+                <div class="target-col">
+                    <div class="target-label">Current Price</div>
+                    <div class="target-price current">₹108.15</div>
+                    <div class="target-upside" style="color: var(--muted);">Entry point</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="target-col">
+                    <div class="target-label">Conservative Target</div>
+                    <div class="target-price conservative">₹118.97</div>
+                    <div class="target-upside" style="color: #F59E0B;">+10% upside</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="target-col">
+                    <div class="target-label">Bull Case Target</div>
+                    <div class="target-price optimistic">₹140.59</div>
+                    <div class="target-upside" style="color: var(--green);">+30% upside</div>
+                </div>
+            </div>
+            <p
+                style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 14px; font-family: 'IBM Plex Mono', monospace;">
+                Historical projection.</p>
+        </section>
+
+        <!-- 10 DIVIDEND -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">10</span>
+                <h2 class="section-title">Dividend & Income</h2>
+            </div>
+            <div class="dividend-banner">
+                <div class="div-item">
+                    <div class="label">Dividend Yield</div>
+                    <div class="val">87.00%</div>
+                </div>
+                <div style="width: 1px; height: 30px; background: var(--border);"></div>
+                <div class="div-item">
+                    <div class="label">Latest Dividend</div>
+                    <div class="val">₹1.00 / share</div>
+                </div>
+                <div style="width: 1px; height: 30px; background: var(--border);"></div>
+                <div class="div-item">
+                    <div class="label">Ex-Date</div>
+                    <div class="val" style="font-size: 16px;">N/A</div>
+                </div>
+                <div class="div-item">
+                    <div class="label">Record Date</div>
+                    <div class="val" style="font-size: 16px;">N/A</div>
+                </div>
+            </div>
+            <p style="font-size: 12px; color: var(--muted); margin-top: 14px;">Dividend info.</p>
+        </section>
+
+        <!-- 11 VERDICT -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-num">11</span>
+                <h2 class="section-title">Final Verdict & Entry Strategy</h2>
+            </div>
+            <div class="final-verdict-box">
+                <div class="fv-title">VERDICT</div>
+                <div class="fv-result">NEUTRAL</div>
+                <div class="fv-sub">Technical momentum is <span
+                        style="color: var(--green); font-weight: 700;">Bullish</span>.</div>
+
+                <div class="fv-grid">
+                    <div class="fv-cell">
+                        <div class="fv-label">Entry Zone</div>
+                        <div class="fv-val">₹102.74 - 108.15</div>
+                    </div>
+                    <div class="fv-cell">
+                        <div class="fv-label">Stop Loss</div>
+                        <div class="fv-val" style="color: var(--red);">₹91.93</div>
+                    </div>
+                    <div class="fv-cell">
+                        <div class="fv-label">Conservative Target</div>
+                        <div class="fv-val" style="color: #F59E0B;">₹118.97</div>
+                    </div>
+                    <div class="fv-cell">
+                        <div class="fv-label">Bull Target</div>
+                        <div class="fv-val" style="color: var(--green);">₹140.59</div>
+                    </div>
+                </div>
+                <div
+                    style="margin-top: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase;">
+                    Time Horizon: <strong style="color: #fff;">12 Months</strong>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+
+</html>
