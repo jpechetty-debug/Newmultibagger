@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import pandas as pd
@@ -26,6 +26,9 @@ from pydantic import BaseModel, Field
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from modules.symbol_utils import normalize_symbol
+from modules.revisions import analyze_revisions
+from modules.drift_monitor import monitor_drift
+from modules.allocation_hrp import HRPAllocator
 
 # Background Task for Periodic Price Updates
 @asynccontextmanager
@@ -41,6 +44,41 @@ async def lifespan(app: FastAPI):
         print("Background price updater stopped.")
 
 app = FastAPI(lifespan=lifespan)
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_json(message)
+            except Exception:
+                if connection in self.active_connections:
+                    self.active_connections.remove(connection)
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/signals")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep the connection open and handle potential pings
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
+
 
 # Allow CORS — origins driven by CORS_ALLOWED_ORIGINS env var (never wildcard in production)
 import config as _cfg
@@ -262,6 +300,14 @@ async def update_prices_background():
                         updated_count = await _run_sqlite_write_with_retry(
                             _write_batch_prices, f"background batch {i//BATCH_SIZE}"
                         )
+                        if updated_count > 0:
+                            try:
+                                symbols_str = ",".join([f"'{s}'" for s in batch])
+                                query = f"SELECT * FROM multibaggers WHERE symbol IN ({symbols_str})"
+                                updated_records = await _run_blocking(_read_records, query)
+                                await manager.broadcast({"type": "update", "data": _json_safe_clean(updated_records)})
+                            except Exception:
+                                pass
                         # Small pause between batches to allow other API requests to breathe
                         await asyncio.sleep(1)
                 
@@ -730,6 +776,20 @@ async def get_trade_history():
         return {"error": str(e)}
 
 app.mount("/static", StaticFiles(directory="web-ui"), name="static")
+
+@app.post("/api/scan")
+async def run_scan():
+    """Trigger a full market scan using screener.py"""
+    try:
+        import sys
+        process = await asyncio.create_subprocess_exec(
+            sys.executable, "screener.py",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        return {"status": "scan_initiated", "pid": process.pid}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/")
 def read_root():
@@ -1403,6 +1463,106 @@ async def get_slippage_stats():
         return _json_safe_clean(data)
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/api/revisions/{symbol}")
+async def get_revisions(symbol: str):
+    """Fetch analyst recommendations trend and score impact."""
+    try:
+        symbol = normalize_symbol(symbol)
+        ticker = yf.Ticker(symbol)
+        score_impact, sentiment = await _run_blocking(analyze_revisions, ticker)
+        return {
+            "symbol": symbol,
+            "score_impact": score_impact,
+            "sentiment": sentiment,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/drift/{symbol}")
+async def get_drift(symbol: str):
+    """Detect investment thesis drift for a single stock."""
+    try:
+        symbol = normalize_symbol(symbol)
+        def _fetch_drift_data():
+            conn = get_connection()
+            try:
+                # Fetch recent technicals and fundamentals
+                row = pd.read_sql("SELECT * FROM multibaggers WHERE symbol = ?", conn, params=(symbol,))
+                if row.empty:
+                    return None
+                return row.iloc[0].to_dict()
+            finally:
+                conn.close()
+        
+        stock_data = await _run_blocking(_fetch_drift_data)
+        if not stock_data:
+            return {"error": "Stock data not found"}
+            
+        status, reason = monitor_drift(stock_data)
+        return {
+            "symbol": symbol,
+            "status": status,
+            "reason": reason,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/allocation/hrp")
+async def get_hrp_allocation():
+    """Calculate HRP weights for top 15 stocks based on 1Y returns."""
+    try:
+        def _get_top_symbols():
+            conn = get_connection()
+            try:
+                df = pd.read_sql("SELECT symbol FROM multibaggers ORDER BY score DESC LIMIT 15", conn)
+                return df["symbol"].tolist()
+            finally:
+                conn.close()
+        
+        symbols = await _run_blocking(_get_top_symbols)
+        if not symbols:
+            return {"error": "No stocks found for allocation"}
+            
+        # Download historical prices for 1 year
+        data = await run_with_exponential_backoff(
+            lambda: _run_ticker_blocking(
+                yf.download,
+                symbols,
+                period="1y",
+                interval="1d",
+                progress=False,
+                auto_adjust=True
+            ),
+            context="hrp allocation price fetch"
+        )
+        
+        if data.empty:
+            return {"error": "Failed to fetch historical data"}
+            
+        # Calculate returns - handle MultiIndex carefully
+        if isinstance(data.columns, pd.MultiIndex):
+            prices = data["Close"] if "Close" in data else data.xs('Close', axis=1, level=0)
+        else:
+            prices = data[["Close"]] if "Close" in data.columns else data
+            
+        returns = prices.pct_change().dropna(how='all').fillna(0)
+        
+        allocator = HRPAllocator()
+        weights = allocator.allocate(returns)
+        
+        # Sort by weight descending
+        sorted_weights = sorted(weights.items(), key=lambda x: x[1], reverse=True)
+        
+        return {
+            "weights": {k: float(v) for k, v in sorted_weights},
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 
 # Helper to clean JSON (NaN/Inf)
 def _json_safe_clean(obj):
