@@ -25,6 +25,9 @@ class HRPAllocator:
         if returns_df.empty:
             return pd.Series()
 
+        if len(returns_df.columns) == 1:
+            return pd.Series([1.0], index=returns_df.columns)
+
         # 1. Compute Correlation and Distance Matrix
         corr = returns_df.corr().fillna(0)
         dist = np.sqrt(0.5 * (1 - corr))
@@ -40,9 +43,14 @@ class HRPAllocator:
         weights = pd.Series(1.0, index=sorted_symbols)
         self._recursive_bisection(weights, sorted_symbols, returns_df.cov())
         
-        # 5. Apply Constraints & Re-normalize
-        weights = weights.clip(lower=self.min_single_weight, upper=self.max_single_weight)
-        weights = weights / weights.sum()
+        # 5. Apply Constraints & Re-normalize Iteratively
+        for _ in range(20):
+            weights = weights.clip(lower=self.min_single_weight, upper=self.max_single_weight)
+            weights = weights / weights.sum()
+            # If all constraints are satisfied within a small tolerance, we can stop
+            if (weights.max() <= self.max_single_weight + 1e-7 and 
+                weights.min() >= self.min_single_weight - 1e-7):
+                break
         
         return weights
 

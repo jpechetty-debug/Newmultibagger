@@ -5,7 +5,10 @@ from datetime import date
 
 import requests
 
-from config import ALPHA_VANTAGE_API_KEY as API_KEY
+from config
+import logging
+logger = logging.getLogger(__name__)
+ import ALPHA_VANTAGE_API_KEY as API_KEY
 
 # Persistent rate limiting tracker across instances.
 _last_call_time = 0.0
@@ -23,8 +26,10 @@ def _load_budget():
             data = json.load(f)
         if data.get("date") == str(date.today()):
             return data.get("calls", 0)
-    except (FileNotFoundError, json.JSONDecodeError):
-        pass
+    except FileNotFoundError:
+        pass  # no budget file yet — that's normal on first run
+    except json.JSONDecodeError as _e:
+        logger.warning("Alpha Vantage budget file is corrupt, resetting: %s", _e)
     return 0
 
 
@@ -34,8 +39,8 @@ def _save_budget(count):
         os.makedirs(os.path.dirname(_BUDGET_FILE), exist_ok=True)
         with open(_BUDGET_FILE, "w") as f:
             json.dump({"date": str(date.today()), "calls": count}, f)
-    except Exception:
-        pass
+    except Exception as _save_err:
+        logger.warning("Alpha Vantage budget save failed: %s", _save_err)
 
 
 def _check_budget():

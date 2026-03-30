@@ -1,15 +1,15 @@
 # Sportking India Limited (SPORTKING.NS) - Investment Report
-**Date:** 11-Mar-2026 | **Price:** 115.57 | **M.Cap:** 1,490 Cr
+**Date:** 23-Mar-2026 | **Price:** 112.09 | **M.Cap:** 1,490 Cr
 
 ## 1. 8-Point Checklist
 | Criterion | Threshold | Actual | Status |
 | :--- | :--- | :--- | :--- |
 | **Market Cap** | > 1,000 Cr | 1490 Cr | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
-| **Valuation (PE)** | < 25 | 12.44 | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
+| **Valuation (PE)** | < 25 | 12.07 | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
 | **Efficiency (ROE)** | > 15% | 11.45% | <span class="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-black tracking-widest uppercase">FAIL</span> |
 | **Debt / Equity** | < 0.5 | 0.58 | <span class="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-black tracking-widest uppercase">FAIL</span> |
 | **Cash Quality** | CFO > PAT | 3.51 | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
-| **Momentum** | < 25% Drop | -17.45% | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
+| **Momentum** | < 25% Drop | -19.94% | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
 | **Sales Growth** | > 10% | 6.2% | <span class="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-black tracking-widest uppercase">FAIL</span> |
 | **EPS Growth** | > 0% | 51.6% | <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PASS</span> |
 
@@ -19,7 +19,7 @@
 | Metric | Value |
 | :--- | :--- |
 | **Target Price (Avg)** | 150.00 |
-| **Upside Potential** | 29.79% |
+| **Upside Potential** | 33.82% |
 | **Number of Analysts**| 35 |
 
 ## 3. Financial Health Snapshot

@@ -246,8 +246,8 @@ class PNSEAProvider(DataProvider):
         cfo_pat = 0.0
         try:
             cfo_pat = raw.get("info", {}).get("cashFlowFromOperations", 0) / max(raw.get("info", {}).get("netProfit", 1), 1)
-        except:
-            pass
+        except (ZeroDivisionError, TypeError, ValueError) as _cfo_err:
+            logger.warning("[%s] CFO/PAT ratio calculation failed: %s", symbol, _cfo_err)
 
         return {
             "symbol": symbol,

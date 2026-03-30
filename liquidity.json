@@ -1,0 +1,29 @@
+{
+    "timestamp": "2026-03-23T13:15:02.353266",
+    "vix": 27.1575,
+    "crisis_multiplier": 1.25,
+    "verdict": "CAUTION",
+    "scenarios": [
+        {
+            "aum": 1000000,
+            "risk_flags": 0,
+            "max_impact_cost": 0.1418,
+            "bottleneck_stock": "GLOBECIVIL.NS",
+            "verdict": "SCALABLE"
+        },
+        {
+            "aum": 10000000,
+            "risk_flags": 0,
+            "max_impact_cost": 0.4485,
+            "bottleneck_stock": "GLOBECIVIL.NS",
+            "verdict": "SCALABLE"
+        },
+        {
+            "aum": 100000000,
+            "risk_flags": 4,
+            "max_impact_cost": 1.4183,
+            "bottleneck_stock": "GLOBECIVIL.NS",
+            "verdict": "CAUTION"
+        }
+    ]
+}

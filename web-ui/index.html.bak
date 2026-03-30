@@ -1,0 +1,2887 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutional Research Terminal | v2.1</title>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+
+    <!-- Marked for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="stress.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            color: #f8fafc;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-hover:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes flashGreen {
+            0% {
+                background-color: rgba(16, 185, 129, 0);
+            }
+
+            50% {
+                background-color: rgba(16, 185, 129, 0.1);
+            }
+
+            100% {
+                background-color: rgba(16, 185, 129, 0);
+            }
+        }
+
+        @keyframes flashRed {
+            0% {
+                background-color: rgba(239, 68, 68, 0);
+            }
+
+            50% {
+                background-color: rgba(239, 68, 68, 0.1);
+            }
+
+            100% {
+                background-color: rgba(239, 68, 68, 0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .flash-up {
+            animation: flashGreen 1.5s ease-out;
+        }
+
+        .flash-down {
+            animation: flashRed 1.5s ease-out;
+        }
+
+        .table-row-anim {
+            transition: all 0.2s ease;
+        }
+
+        .table-row-anim:hover {
+            transform: scale(1.002);
+        }
+
+        /* Custom Scrollbar for Forensics */
+        .forensics-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .forensics-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        /* Markdown Styles */
+        .prose h1,
+        .prose h2,
+        .prose h3 {
+            color: #f1f5f9;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+
+        .prose p {
+            margin-bottom: 1em;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .prose strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1em;
+        }
+
+        .prose li {
+            margin-bottom: 0.25em;
+        }
+
+        .prose code {
+            background: #1e293b;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: #e2e8f0;
+        }
+
+        .prose pre {
+            background: #1e293b;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1em;
+        }
+
+        .prose blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1em;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .prose th,
+        .prose td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #334155;
+            text-align: left;
+        }
+
+        .prose th {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        /* Highlight */
+        .highlight {
+            background-color: rgba(16, 185, 129, 0.3);
+            color: white;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        /* Ticker Tape Animation */
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-scroll {
+            animation: scroll 40s linear infinite;
+        }
+
+        .animate-scroll:hover {
+            animation-play-state: paused;
+        }
+
+        /* Heartbeat Pulse */
+        @keyframes heartPulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.4);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .heart-pulse {
+            animation: heartPulse 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef, Profiler } = React;
+
+        // --- Utility Functions ---
+        const formatCurrency = (val) => (val != null && !isNaN(val)) ? `${val.toLocaleString('en-IN')}` : '-';
+        const formatPct = (val) => (val != null && !isNaN(val)) ? `${val.toFixed(1)}%` : '-';
+        const formatNum = (val) => (val != null && !isNaN(val)) ? val.toLocaleString('en-IN') : '-';
+
+
+        const getSignalPill = (signal) => {
+            const base = "px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border transition-all shadow-[0_0_10px_rgba(0,0,0,0)]";
+            if (signal === 'Bullish') return <span className={`${base} text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]`}>BULL</span>;
+            if (signal === 'Bearish') return <span className={`${base} text-red-400 border-red-500/30 bg-red-500/10 shadow-[0_0_10px_rgba(239,68,68,0.2)]`}>BEAR</span>;
+            return <span className={`${base} text-slate-400 border-slate-700 bg-slate-800/50`}>NEUT</span>;
+        };
+
+        // --- Components ---
+
+        const HighlightText = ({ text, highlight }) => {
+            if (!highlight || !text) return <span>{text}</span>;
+            const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+            return (
+                <span>
+                    {parts.map((part, i) =>
+                        part.toLowerCase() === highlight.toLowerCase()
+                            ? <span key={i} className="highlight">{part}</span>
+                            : part
+                    )}
+                </span>
+            );
+        };
+
+        // --- Icons ---
+        const Icons = {
+            Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>,
+            Trending: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>,
+            SortUp: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path></svg>,
+            SortDown: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>,
+            Close: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>,
+            Clear: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>,
+            TrendingUp: () => <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>,
+            TrendingDown: () => <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>,
+            Filter: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>,
+            Bell: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>,
+            Command: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>,
+            Shield: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>,
+            Users: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>,
+            BarChart: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+        };
+
+        const KpiCard = React.memo(({ title, value, subtext, trend }) => (
+            <div className={`glass p-5 rounded-xl border border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-colors group relative overflow-hidden ${trend === 'up' ? 'hover:border-emerald-500/30' : (trend === 'down' ? 'hover:border-red-500/30' : '')}`}>
+                {trend === 'up' && <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 blur-2xl rounded-full -mr-8 -mt-8 pointer-events-none"></div>}
+
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-2 relative z-10">{title}</div>
+                <div className="text-3xl font-black text-white tracking-tighter mb-1 relative z-10 group-hover:scale-105 transition-transform origin-left">{value}</div>
+                <div className="flex items-center gap-2 relative z-10">
+                    {trend === 'up' && <Icons.TrendingUp className="text-emerald-500 w-3 h-3" />}
+                    {trend === 'down' && <Icons.TrendingDown className="text-red-500 w-3 h-3" />}
+                    <span className={`text-[10px] font-bold ${trend === 'up' ? 'text-emerald-400' : (trend === 'down' ? 'text-red-400' : 'text-slate-500')}`}>
+                        {subtext}
+                    </span>
+                </div>
+            </div>
+        ));
+
+        // --- Market Status Component ---
+        const getMarketStatus = (validTradingDays = null) => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1; // 1-12
+            const date = now.getDate();
+            const day = now.getDay();
+            const hour = now.getHours();
+            const min = now.getMinutes();
+
+            const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+
+            // Dynamic Holiday Check from API
+            if (validTradingDays !== null) {
+                if (!validTradingDays.includes(todayStr) && day !== 0 && day !== 6) {
+                    return { label: 'MARKET CLOSED (HOLIDAY)', color: 'text-red-400', dot: 'bg-red-500', shadow: 'shadow-red-500/50' };
+                }
+            }
+
+            // Weekend Check (0 = Sun, 6 = Sat)
+            if (day === 0 || day === 6) return { label: 'MARKET CLOSED (WEEKEND)', color: 'text-red-400', dot: 'bg-red-500', shadow: 'shadow-red-500/50' };
+
+            // Time Check (9:15 - 15:30)
+            const time = hour * 60 + min;
+            const start = 9 * 60 + 15;
+            const end = 15 * 60 + 30;
+            const preOpenStart = 9 * 60;
+
+            if (time >= start && time <= end) {
+                return { label: 'MARKET OPEN', color: 'text-emerald-400', dot: 'bg-emerald-500', shadow: 'shadow-emerald-500/50' };
+            } else if (time >= preOpenStart && time < start) {
+                return { label: 'PRE-OPEN', color: 'text-yellow-400', dot: 'bg-yellow-500', shadow: 'shadow-yellow-500/50' };
+            } else {
+                return { label: 'MARKET CLOSED', color: 'text-red-400', dot: 'bg-red-500', shadow: 'shadow-red-500/50' };
+            }
+        };
+
+        const MarketStatus = React.memo(() => {
+            const [status, setStatus] = useState(getMarketStatus());
+            const [validDays, setValidDays] = useState(null);
+
+            useEffect(() => {
+                // Fetch dynamic calendar once on mount
+                fetch('/api/market-calendar')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid_trading_days) setValidDays(data.valid_trading_days);
+                    })
+                    .catch(e => console.error("Failed to fetch market calendar", e));
+            }, []);
+
+            useEffect(() => {
+                // Initial update once validDays loads
+                setStatus(getMarketStatus(validDays));
+
+                const interval = setInterval(() => {
+                    setStatus(getMarketStatus(validDays));
+                }, 60000); // Update every minute
+
+                return () => clearInterval(interval);
+            }, [validDays]);
+
+            return (
+                <div className="flex items-center gap-3">
+                    <div className="text-right">
+                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">NSE Status</div>
+                        <div className={`font-bold text-sm ${status.color}`}>{status.label}</div>
+                    </div>
+                    <div className={`w-2 h-2 rounded-full ${status.dot} shadow-[0_0_10px] ${status.shadow} animate-pulse`}></div>
+                </div>
+            );
+        });
+
+        // --- Dynamic Hooks ---
+        const usePriceSimulation = (stocks, interval = 3000) => {
+            const [simulatedData, setSimulatedData] = useState([]);
+
+            useEffect(() => {
+                if (stocks.length > 0 && simulatedData.length === 0) {
+                    setSimulatedData(stocks.map(s => ({
+                        ...s,
+                        prevPrice: s.price,
+                        flash: null,
+                        history: Array(12).fill(s.price).map((p, i) => p * (1 + (Math.random() * 0.02 - 0.01)))
+                    })));
+                } else if (stocks.length > 0) {
+                    // Update existing data with base info without wiping history
+                    setSimulatedData(current => stocks.map(s => {
+                        const existing = current.find(c => c.symbol === s.symbol);
+                        return existing ? { ...s, price: existing.price, history: existing.history } : { ...s, history: Array(12).fill(s.price) };
+                    }));
+                }
+            }, [stocks]);
+
+            useEffect(() => {
+                if (simulatedData.length === 0) return;
+
+                const timer = setInterval(() => {
+                    setSimulatedData(current => current.map(s => {
+                        if (Math.random() > 0.4) return s;
+
+                        const change = 1 + (Math.random() * 0.002 - 0.001);
+                        const newPrice = s.price * change;
+                        const newHistory = [...(s.history || Array(12).fill(s.price)).slice(1), newPrice];
+                        return {
+                            ...s,
+                            prevPrice: s.price,
+                            price: newPrice,
+                            flash: newPrice > s.price ? 'up' : 'down',
+                            history: newHistory
+                        };
+                    }));
+                }, interval);
+
+                return () => clearInterval(timer);
+            }, [simulatedData.length]);
+
+            return simulatedData;
+        };
+
+        // --- New Components ---
+
+        const SlippageMonitor = React.memo(({ stats }) => {
+            if (!stats || stats.length === 0) return (
+                <div className="glass rounded-xl p-4 border border-white/5 h-full flex flex-col items-center justify-center text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                    <span>Calibration Pending</span>
+                </div>
+            );
+
+            return (
+                <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-white/5">
+                    <div className="p-3 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                            EXECUTION QUALITY
+                        </h3>
+                        <span className="text-[10px] text-slate-500 font-mono font-bold">30D ROLLING</span>
+                    </div>
+                    <div className="flex-1 p-3">
+                        <table className="w-full text-left text-[10px]">
+                            <thead>
+                                <tr className="text-slate-500 uppercase border-b border-white/5">
+                                    <th className="font-bold pb-2">Tier</th>
+                                    <th className="font-bold pb-2 text-right">P95 (BPS)</th>
+                                    <th className="font-bold pb-2 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {stats.map((row, i) => {
+                                    // Conservative fallback if no Tier data
+                                    const modeled = row.tier === 'LARGE_CAP' ? 20 : row.tier === 'MID_CAP' ? 50 : row.tier === 'SMALL_CAP' ? 100 : 200;
+                                    const inflation = row.p95_bps > modeled;
+                                    return (
+                                        <tr key={i} className="group hover:bg-white/5 transition-colors">
+                                            <td className="py-2.5 font-bold text-slate-300">{row.tier.replace('_CAP', '')}</td>
+                                            <td className={`py-2.5 text-right font-mono font-bold ${inflation ? 'text-red-400' : 'text-slate-300'}`}>
+                                                {Math.round(row.p95_bps)} <span className="text-[9px] text-slate-600 font-normal">/ {modeled}</span>
+                                            </td>
+                                            <td className="py-2.5 text-center">
+                                                <span className={`px-1.5 py-0.5 rounded ${inflation ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'} font-bold`}>
+                                                    {inflation ? 'INFLATED' : 'OPTIMAL'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        });
+
+
+        const ForensicsFeed = React.memo(({ rejections }) => (
+            <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-white/5">
+                <div className="p-3 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                        Forensics Stream
+                    </h3>
+                    <span className="text-[10px] text-slate-500 font-mono font-bold">LIVE</span>
+                </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 max-h-[140px]">
+                    {rejections.length === 0 ? (
+                        <div className="text-center text-slate-600 text-[10px] py-4 italic">No anomalies detected in the last hour.</div>
+                    ) : (
+                        rejections.map((rej, i) => (
+                            <div key={i} className="flex items-start gap-3 p-2 rounded bg-white/5 border border-white/5 hover:bg-white/10 transition-colors animate-fade-in group">
+                                <span className="text-[10px] font-bold text-emerald-400 font-mono mt-0.5">{rej.Symbol || 'UNK'}</span>
+                                <div className="flex-1">
+                                    <div className="text-[10px] text-slate-300 leading-tight group-hover:text-white transition-colors">{rej.Reason}</div>
+                                    <div className="text-[9px] text-slate-500 font-mono mt-0.5">{rej.Timestamp}</div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        ));
+
+        // --- Stress Dashboard Component ---
+        const StressDashboard = ({ engine }) => {
+            const [metrics, setMetrics] = useState(engine.metrics);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setMetrics({ ...engine.metrics });
+                }, 500);
+                return () => clearInterval(interval);
+            }, [engine]);
+
+            if (!engine.active) return null;
+
+            return (
+                <div className="fixed top-20 left-4 z-50 bg-black/90 border border-red-500/50 p-4 rounded-xl shadow-2xl backdrop-blur-md w-64 font-mono text-xs">
+                    <div className="text-red-500 font-bold uppercase tracking-widest mb-2 border-b border-red-500/30 pb-1">
+                        Stress Harness: {engine.currentLevel.toUpperCase()}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                        <div className="text-slate-400">FPS</div>
+                        <div className={`text-right font-bold ${metrics.fps < 40 ? 'text-red-500 animate-pulse' : 'text-emerald-400'}`}>
+                            {metrics.fps}
+                        </div>
+
+                        <div className="text-slate-400">Events/s</div>
+                        <div className="text-right text-white font-bold">{metrics.eventsPerSec}</div>
+
+                        <div className="text-slate-400">Avg Lag</div>
+                        <div className={`text-right font-bold ${metrics.avgLag > 30 ? 'text-orange-400' : 'text-emerald-400'}`}>
+                            {metrics.avgLag}ms
+                        </div>
+
+                        <div className="text-slate-400">P99 Lag</div>
+                        <div className={`text-right font-bold ${metrics.p99Lag > 100 ? 'text-red-500' : 'text-blue-400'}`}>
+                            {metrics.p99Lag}ms
+                        </div>
+
+                        <div className="text-slate-400">Heap</div>
+                        <div className="text-right text-purple-400">{metrics.heapUsed} MB</div>
+
+                        <div className="text-slate-400">Avg Commit</div>
+                        <div className={`text-right font-bold ${metrics.avgCommit > 16 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                            {metrics.avgCommit}ms
+                        </div>
+
+                        <div className="text-slate-400">Max Commit</div>
+                        <div className={`text-right font-bold ${metrics.maxCommit > 50 ? 'text-red-500' : 'text-blue-400'}`}>
+                            {metrics.maxCommit}ms
+                        </div>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-white/10 flex justify-between items-center">
+                        <span className="text-slate-500">Status</span>
+                        <span className="bg-red-500/20 text-red-300 px-2 py-0.5 rounded text-[9px] uppercase font-bold animate-pulse">
+                            ACTIVE
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+
+        const Sparkline = ({ history }) => {
+            if (!history || history.length < 2) return null;
+            const min = Math.min(...history);
+            const max = Math.max(...history);
+            const range = max - min || 1;
+            const width = 80;
+            const height = 24;
+
+            const points = history.map((p, i) => {
+                const x = (i / (history.length - 1)) * width;
+                const y = height - ((p - min) / range) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            const isUp = history[history.length - 1] >= history[0];
+            const color = isUp ? '#10b981' : '#ef4444';
+
+            return (
+                <div className="flex items-center justify-center">
+                    <svg width={width} height={height} className="overflow-visible">
+                        <defs>
+                            <linearGradient id="gradUp" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                            </linearGradient>
+                            <linearGradient id="gradDown" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
+                                <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <path d={`M0,${height} L0,${height} ${points} L${width},${height} Z`} fill={isUp ? "url(#gradUp)" : "url(#gradDown)"} stroke="none" />
+                        <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
+                    </svg>
+                </div>
+            );
+        };
+        const IntegrityWidget = React.memo(({ latency, queue }) => (
+            <div className="glass rounded-xl p-4 flex flex-col justify-between h-full border border-white/5 bg-gradient-to-br from-slate-900 to-slate-800">
+                <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-2">Neural Heartbeat</div>
+                    <div className="flex items-baseline gap-1">
+                        <span className={`text-2xl font-black font-mono ${latency < 20 ? 'text-emerald-400' : 'text-amber-400'}`}>{latency}</span>
+                        <span className="text-[10px] text-slate-500 font-bold">ms</span>
+                    </div>
+                </div>
+                <div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
+                        <div className="h-full bg-emerald-500 animate-pulse" style={{ width: '100%' }}></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Queue Depth</span>
+                        <span className="text-[10px] text-white font-mono font-bold">{queue}</span>
+                    </div>
+                </div>
+            </div>
+        ));
+
+        const ValuationDisplay = ({ metrics }) => {
+            if (!metrics) return null;
+            const { intrinsic_value, margin_of_safety, verdict, components } = metrics;
+            const safeComponents = components || {
+                dcf: metrics.dcf_value ?? 0,
+                graham: metrics.graham_value ?? 0,
+                epv: metrics.epv_value ?? 0
+            };
+
+            return (
+                <div className="mb-6 p-4 glass rounded-xl border border-white/10 bg-slate-900/50">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                <Icons.Trending />
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Intrinsic Value</div>
+                                <div className="text-xl font-bold text-white font-mono">{formatCurrency(intrinsic_value)}</div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Margin of Safety</div>
+                            <div className={`text-xl font-black ${margin_of_safety > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {margin_of_safety > 0 ? '+' : ''}{margin_of_safety}%
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Gauge/Bar */}
+                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden mb-4 flex">
+                        <div className="h-full bg-red-500/50 w-1/3"></div>
+                        <div className="h-full bg-yellow-500/50 w-1/3"></div>
+                        <div className="h-full bg-emerald-500/50 w-1/3"></div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-slate-800/50 rounded p-2">
+                            <div className="text-[9px] text-slate-500 uppercase">DCF</div>
+                            <div className="text-xs font-mono font-bold text-slate-300">{formatCurrency(safeComponents.dcf)}</div>
+                        </div>
+                        <div className="bg-slate-800/50 rounded p-2">
+                            <div className="text-[9px] text-slate-500 uppercase">Graham</div>
+                            <div className="text-xs font-mono font-bold text-slate-300">{formatCurrency(safeComponents.graham)}</div>
+                        </div>
+                        <div className="bg-slate-800/50 rounded p-2">
+                            <div className="text-[9px] text-slate-500 uppercase">EPV</div>
+                            <div className="text-xs font-mono font-bold text-slate-300">{formatCurrency(safeComponents.epv)}</div>
+                        </div>
+                    </div>
+
+                    <div className="mt-3 text-center">
+                        <span className={`text-xs font-black px-2 py-1 rounded border uppercase tracking-widest ${verdict === 'UNDERVALUED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (verdict === 'OVERVALUED' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30')}`}>
+                            {verdict}
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+
+        const TickerTape = React.memo(({ items, visible }) => {
+            if (!visible) return null;
+            return (
+                <div className="bg-[#020617] border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#020617] to-transparent z-10"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#020617] to-transparent z-10"></div>
+                    <div className="flex animate-scroll px-4">
+                        {[...items, ...items].map((item, i) => (
+                            <div key={i} className="flex items-center gap-3 mx-6">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.symbol}</span>
+                                <span className="text-xs font-mono font-bold text-white">{item.price.toLocaleString('en-IN')}</span>
+                                <span className={`text-[10px] font-bold ${item.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {item.change >= 0 ? '+' : '-'} {Math.abs(item.change).toFixed(2)}%
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        });
+
+
+
+        const FinancialsChart = ({ data }) => {
+            if (!data || !data.timeline || data.timeline.length === 0) return null;
+
+            const maxRev = Math.max(...data.timeline.map(d => d.revenue));
+            const chartHeight = 120;
+
+            return (
+                <div className="mb-8 p-6 rounded-2xl bg-slate-900/50 border border-white/5">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-6">
+                        QUARTERLY PERFORMANCE: <span className="text-emerald-400">TREND ANALYSIS</span>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-2 h-[160px] pt-4">
+                        {data.timeline.map((q, i) => {
+                            const revHeight = (q.revenue / maxRev) * chartHeight;
+                            const profHeight = (Math.max(0, q.profit) / maxRev) * chartHeight;
+
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center group relative">
+                                    {/* Profit Bar (Layered) */}
+                                    <div
+                                        className="w-full max-w-[40px] bg-emerald-500/80 rounded-t-sm z-10 transition-all duration-500 group-hover:bg-emerald-400"
+                                        style={{ height: `${profHeight}px` }}
+                                    ></div>
+
+                                    {/* Revenue Bar */}
+                                    <div
+                                        className="w-full max-w-[40px] bg-slate-700/50 rounded-t-lg -mt-[2px] transition-all duration-500 group-hover:bg-slate-600/50"
+                                        style={{ height: `${revHeight}px` }}
+                                    ></div>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-800 text-[10px] p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none whitespace-nowrap shadow-xl">
+                                        <div className="text-slate-400">Rev: <span className="text-white font-mono">{formatCurrency(q.revenue)}</span></div>
+                                        <div className="text-emerald-400">Net: <span className="font-mono">{formatCurrency(q.profit)}</span></div>
+                                        {q.growth && <div className="text-yellow-400">Growth: {q.growth}%</div>}
+                                    </div>
+
+                                    {/* Label */}
+                                    <div className="mt-3 text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
+                                        {q.date}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex gap-4 mt-6 justify-center">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-slate-700"></div>
+                            <span className="text-[9px] text-slate-500 font-bold uppercase">REVENUE</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span className="text-[9px] text-slate-500 font-bold uppercase">NET PROFIT</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TechnicalMeter = ({ data }) => {
+            if (!data || data.error) return null;
+
+            const score = Number(data.strength_score) || 0;
+            const rsi = Number(data.rsi) || 0;
+            const color = score > 70 ? 'text-emerald-400' : score > 40 ? 'text-yellow-400' : 'text-red-400';
+            const strokeColor = score > 70 ? '#10b981' : score > 40 ? '#fbbf24' : '#f87171';
+
+            return (
+                <div className="p-6 rounded-2xl bg-slate-900/50 border border-white/5 flex items-center gap-8 mb-6">
+                    <div className="relative w-24 h-24">
+                        <svg className="w-full h-full -rotate-90">
+                            <circle cx="48" cy="48" r="40" fill="none" stroke="#1e293b" strokeWidth="8" />
+                            <circle
+                                cx="48" cy="48" r="40" fill="none" stroke={strokeColor} strokeWidth="8"
+                                strokeDasharray="251" strokeDashoffset={251 * (1 - score / 100)}
+                                className="transition-all duration-1000"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <div className={`text-2xl font-black ${color}`}>{score}</div>
+                            <div className="text-[8px] text-slate-500 font-bold uppercase">PULSE</div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">STRATEGY</div>
+                            <div className="text-sm font-bold text-white uppercase">{data.trend || 'NEUTRAL'}</div>
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">RSI (14)</div>
+                            <div className={`text-sm font-bold ${rsi > 70 ? 'text-orange-400' : rsi < 30 ? 'text-emerald-400' : 'text-white'}`}>{rsi.toFixed(1)}</div>
+                        </div>
+                        <div className="col-span-2 flex gap-3 mt-1">
+                            <span className="text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold uppercase">SMA50: {data.sma_50 || '-'}</span>
+                            <span className="text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold uppercase">SMA200: {data.sma_200 || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ShareholdingRadar = ({ data }) => {
+            if (!data || !data.pattern) return null;
+            const p = data.pattern;
+
+            const segments = [
+                { label: 'Promoters', value: Number(p.promoters) || 0, color: 'bg-emerald-500' },
+                { label: 'Institutions', value: Number(p.institutions) || 0, color: 'bg-blue-500' },
+                { label: 'Public', value: Number(p.public) || 0, color: 'bg-slate-700' }
+            ];
+
+            return (
+                <div className="p-6 rounded-2xl bg-slate-900/50 border border-white/5 mb-6">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-4">
+                        OWNERSHIP STRUCTURE: <span className="text-blue-400">INSTITUTIONAL RADAR</span>
+                    </div>
+
+                    <div className="flex h-4 w-full rounded-full overflow-hidden bg-slate-800 mb-6 border border-white/5">
+                        {segments.map((s, i) => (
+                            <div key={i} className={`${s.color} h-full transition-all duration-1000`} style={{ width: `${s.value}%` }} title={`${s.label}: ${s.value.toFixed(1)}%`}></div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        {segments.map((s, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${s.color}`}></div>
+                                <div>
+                                    <div className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">{s.label}</div>
+                                    <div className="text-xs font-bold text-white">{s.value.toFixed(1)}%</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const PeerComparison = ({ data, symbol }) => {
+            if (!data || !data.peers || data.peers.length === 0) {
+                return (
+                    <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl p-6 text-center">
+                        <p className="text-amber-400 font-bold uppercase tracking-widest text-xs">No peer data available for this sector</p>
+                    </div>
+                );
+            }
+
+            const { stock_metrics, peers, sector_avg, sector, rankings } = data;
+
+            const getComparisonColor = (stockValue, sectorValue, higherIsBetter = true) => {
+                if (stockValue === null || sectorValue === null) return 'text-slate-400';
+                const isBetter = higherIsBetter ? stockValue > sectorValue : stockValue < sectorValue;
+                return isBetter ? 'text-emerald-400' : 'text-red-400';
+            };
+
+            const formatPercent = (value) => {
+                if (value === null || value === undefined) return 'N/A';
+                return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+            };
+
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    {/* Rankings Badge */}
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
+                            SECTOR BENCHMARK: <span className="text-blue-400">{sector}</span>
+                        </div>
+                        {rankings && rankings.score_rank && (
+                            <div className="glass bg-blue-500/10 border-blue-500/30 rounded-lg px-3 py-1 flex items-center gap-3">
+                                <span className="text-[9px] text-blue-400 font-black uppercase tracking-tighter">TERMINAL RANK</span>
+                                <span className="text-sm font-black text-white">#{rankings.score_rank_desc}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Comparison Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="glass p-4 rounded-xl border-white/5">
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">Valuation (P/E)</div>
+                            {stock_metrics.pe ? (
+                                <>
+                                    <div className={`text-xl font-black ${getComparisonColor(stock_metrics.pe, sector_avg.pe, false)}`}>
+                                        {stock_metrics.pe}x
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-1">Sector Avg: {sector_avg.pe}x</div>
+                                </>
+                            ) : <div className="text-slate-600">N/A</div>}
+                        </div>
+                        <div className="glass p-4 rounded-xl border-white/5">
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">Quality (ROE)</div>
+                            {stock_metrics.roe ? (
+                                <>
+                                    <div className={`text-xl font-black ${getComparisonColor(stock_metrics.roe, sector_avg.roe, true)}`}>
+                                        {stock_metrics.roe}%
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-1">Sector Avg: {sector_avg.roe}%</div>
+                                </>
+                            ) : <div className="text-slate-600">N/A</div>}
+                        </div>
+                        <div className="glass p-4 rounded-xl border-white/5">
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">Institutional Score</div>
+                            {stock_metrics.terminal_score ? (
+                                <>
+                                    <div className={`text-xl font-black ${getComparisonColor(stock_metrics.terminal_score, sector_avg.terminal_score, true)}`}>
+                                        {stock_metrics.terminal_score}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-1">Sector Avg: {Math.round(sector_avg.terminal_score)}</div>
+                                </>
+                            ) : <div className="text-slate-600">N/A</div>}
+                        </div>
+                    </div>
+
+                    {/* Peers Table */}
+                    <div className="overflow-x-auto rounded-xl border border-white/5 bg-slate-900/50">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="text-[10px] text-slate-500 uppercase border-b border-white/5">
+                                    <th className="p-3 font-bold">Stock</th>
+                                    <th className="p-3 font-bold text-right">Price</th>
+                                    <th className="p-3 font-bold text-center">Score</th>
+                                    <th className="p-3 font-bold text-right">P/E</th>
+                                    <th className="p-3 font-bold text-right">ROE %</th>
+                                    <th className="p-3 font-bold text-right">D/E</th>
+                                    <th className="p-3 font-bold text-right">3M %</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {/* Target Stock Row */}
+                                <tr className="bg-blue-500/10 border-b border-blue-500/20">
+                                    <td className="p-3">
+                                        <div className="text-xs font-black text-white">{symbol.replace('.NS', '')} *</div>
+                                        <div className="text-[9px] text-slate-500 uppercase truncate max-w-[120px]">{stock_metrics.name}</div>
+                                    </td>
+                                    <td className="p-3 text-right font-mono text-xs text-white">{formatCurrency(stock_metrics.current_price)}</td>
+                                    <td className="p-3 text-center">
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded ${stock_metrics.terminal_score >= 70 ? 'bg-emerald-500 text-black' : (stock_metrics.terminal_score >= 50 ? 'bg-amber-500 text-black' : 'bg-red-500 text-white')}`}>
+                                            {stock_metrics.terminal_score}
+                                        </span>
+                                    </td>
+                                    <td className="p-3 text-right font-mono text-xs text-slate-300">{stock_metrics.pe || '-'}</td>
+                                    <td className="p-3 text-right font-mono text-xs text-slate-300">{stock_metrics.roe || '-'}</td>
+                                    <td className="p-3 text-right font-mono text-xs text-slate-300">{stock_metrics.debt_equity || '-'}</td>
+                                    <td className={`p-3 text-right font-mono text-xs ${stock_metrics.price_change_3m > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {formatPercent(stock_metrics.price_change_3m)}
+                                    </td>
+                                </tr>
+
+                                {/* Peer Rows */}
+                                {peers.map((peer, idx) => (
+                                    <tr key={idx} className="hover:bg-white/5 transition-colors">
+                                        <td className="p-3">
+                                            <div className="text-xs font-bold text-slate-300">{peer.symbol.replace('.NS', '')}</div>
+                                            <div className="text-[9px] text-slate-500 uppercase truncate max-w-[120px]">{peer.name}</div>
+                                        </td>
+                                        <td className="p-3 text-right font-mono text-xs text-slate-400">{formatCurrency(peer.current_price)}</td>
+                                        <td className="p-3 text-center">
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300`}>
+                                                {peer.terminal_score || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 text-right font-mono text-xs text-slate-400">{peer.pe || '-'}</td>
+                                        <td className="p-3 text-right font-mono text-xs text-slate-400">{peer.roe || '-'}</td>
+                                        <td className="p-3 text-right font-mono text-xs text-slate-400">{peer.debt_equity || '-'}</td>
+                                        <td className={`p-3 text-right font-mono text-xs ${peer.price_change_3m > 0 ? 'text-emerald-500/70' : 'text-red-500/70'}`}>
+                                            {formatPercent(peer.price_change_3m)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Key Insights */}
+                    <div className="glass p-5 rounded-xl border-white/5 bg-slate-900/40">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">CONSOLIDATED PEER INSIGHTS</div>
+                        <div className="space-y-2">
+                            {stock_metrics.pe && sector_avg.pe && (
+                                <div className="flex items-center gap-3 text-xs">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${stock_metrics.pe < sector_avg.pe ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                    <span className="text-slate-300">Valuation is <span className="font-bold text-white">{stock_metrics.pe < sector_avg.pe ? 'UNDERVALUED' : 'OVERVALUED'}</span> relative to sector peer average ({sector_avg.pe}x).</span>
+                                </div>
+                            )}
+                            {stock_metrics.roe && sector_avg.roe && (
+                                <div className="flex items-center gap-3 text-xs">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${stock_metrics.roe > sector_avg.roe ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                    <span className="text-slate-300">Capital efficiency (ROE) is <span className="font-bold text-white">{stock_metrics.roe > sector_avg.roe ? 'ABOVE' : 'BELOW'}</span> the benchmark ({sector_avg.roe}%).</span>
+                                </div>
+                            )}
+                            {stock_metrics.terminal_score && sector_avg.terminal_score && (
+                                <div className="flex items-center gap-3 text-xs">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${stock_metrics.terminal_score > sector_avg.terminal_score ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                    <span className="text-slate-300">Overall AI Terminal Score ranks <span className="font-bold text-white">{rankings.score_rank_desc}</span> within target list.</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const NewsFeed = ({ news }) => {
+            if (!news || news.length === 0) return null;
+
+            return (
+                <div className="mb-8">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        NARRATIVE INTELLIGENCE: <span className="text-blue-400">LATEST UPDATES</span>
+                    </div>
+                    <div className="space-y-3">
+                        {news.map((item, i) => (
+                            <a
+                                key={i}
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block p-4 rounded-xl border border-white/5 bg-slate-900/30 hover:bg-slate-800/50 hover:border-blue-500/30 transition-all group"
+                            >
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            {item.sentiment_label && (
+                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-sm tracking-wider ${item.sentiment_score > 0.15 ? 'bg-emerald-500 text-black' : (item.sentiment_score < -0.15 ? 'bg-red-500 text-white' : 'bg-slate-700 text-slate-300')}`}>
+                                                    {item.sentiment_label.toUpperCase()}
+                                                </span>
+                                            )}
+                                            <h4 className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors leading-relaxed">
+                                                {item.title}
+                                            </h4>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[10px] text-slate-500 font-black uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded">
+                                                {item.publisher}
+                                            </span>
+                                            <span className="text-[10px] text-slate-600 font-mono">
+                                                {item.published}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="text-slate-600 group-hover:text-blue-400 transition-colors">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const RegimeGauge = React.memo(({ status, onOverride }) => {
+            const vix = status?.vix || 0;
+            const threshold = status?.vix_threshold || 18.0;
+            const dashOffset = 175 * (1 - Math.min(1, Math.max(0, (threshold - vix) / threshold)));
+
+            return (
+                <div className="glass rounded-xl p-5 flex items-center gap-6 group hover:border-emerald-500/30 transition-all border border-white/5 relative">
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                        <svg className="w-full h-full -rotate-90">
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="#1e293b" strokeWidth="4" />
+                            <circle
+                                cx="32" cy="32" r="28" fill="none" stroke="#10b981" strokeWidth="4"
+                                strokeDasharray="175" strokeDashoffset={isNaN(dashOffset) ? 175 : dashOffset}
+                                className="transition-all duration-1000 shadow-[0_0_10px_#10b981]"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center flex-col">
+                            <div className="text-[11px] text-white font-black tracking-tighter">VIX</div>
+                            <div className="text-sm font-bold text-white font-mono">{vix.toFixed(1)}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-1 flex items-center gap-2">
+                            MARKET REGIME
+                            {status?.is_forced && <span className="bg-red-500 text-white text-[8px] px-1 rounded animate-pulse">FORCED</span>}
+                        </div>
+                        <div className="text-2xl font-black text-white tracking-tighter group-hover:text-emerald-400 transition-colors uppercase">{status?.regime || 'SIDEWAYS'}</div>
+                        <div className="flex gap-1.5 mt-2">
+                            {Object.entries(status?.votes || {}).map(([k, v]) => (
+                                <span key={k} className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-tighter ${v === 'BULL' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : (v === 'BEAR' ? 'text-red-400 bg-red-500/10 border-red-500/30' : 'text-slate-500 bg-slate-800 border-white/5')}`}>
+                                    {k[0]}: {v[0]}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Override Controls */}
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => onOverride('BEAR')} className="bg-red-500/20 text-red-400 text-[9px] px-2 py-1 rounded hover:bg-red-500/40 font-bold hover:text-white transition-colors">FORCE BEAR</button>
+                        <button onClick={() => onOverride('AUTO')} className="bg-blue-500/20 text-blue-400 text-[9px] px-2 py-1 rounded hover:bg-blue-500/40 font-bold hover:text-white transition-colors">AUTO PILOT</button>
+                    </div>
+                </div>
+            );
+        });
+        const QuarterlyTimeline = ({ symbol }) => {
+            const {
+                Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart
+            } = window.Recharts;
+
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [viewMode, setViewMode] = useState('revenue');
+
+            useEffect(() => {
+                const fetchData = async () => {
+                    if (!symbol) return;
+                    try {
+                        setLoading(true);
+                        setError(null);
+                        const response = await fetch(`/api/quarterly-results/${symbol}`);
+                        const result = await response.json();
+                        if (!response.ok) {
+                            throw new Error(result?.detail || result?.error || 'Failed to load quarterly results');
+                        }
+                        setData(result);
+                    } catch (err) {
+                        setError(err.message || 'Failed to load quarterly results');
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                fetchData();
+            }, [symbol]);
+
+            if (loading) return <div className="text-center py-32 text-slate-500 animate-pulse flex flex-col items-center"><div className="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-4"></div>Analyzing Financial Pulse...</div>;
+            if (error) return <div className="text-red-400 p-4 bg-red-950/20 border border-red-500/30 rounded-xl">Error: {error}</div>;
+            if (!data || !data.quarters || data.quarters.length === 0) return <div className="text-slate-500 py-12 text-center">No quarterly data available.</div>;
+
+            const { quarters, trends, alerts, company_name } = data;
+            const chartData = quarters.map((q) => ({
+                quarter: q.quarter,
+                revenue: q.revenue,
+                profit: q.profit,
+                ebitda: q.ebitda,
+                margin: q.margin,
+                ebitda_margin: q.ebitda_margin,
+                revenue_growth: q.revenue_growth_qoq || 0,
+                profit_growth: q.profit_growth_qoq || 0
+            }));
+
+            const formatSignedPercent = (value) => {
+                if (value === null || value === undefined || isNaN(value)) return '--';
+                return `${value > 0 ? '+' : ''}${value}%`;
+            };
+
+            const TrendCard = ({ label, value, trend, subtext }) => (
+                <div className="glass p-4 rounded-xl border-white/5">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">{label}</div>
+                    <div className="flex items-center gap-3">
+                        <div className="text-lg font-black text-white">{value}</div>
+                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded ${trend === 'GROWING' || trend === 'EXPANDING' || trend === 'HIGH' ? 'bg-emerald-500/10 text-emerald-400' :
+                            trend === 'DECLINING' || trend === 'CONTRACTING' || trend === 'LOW' ? 'bg-red-500/10 text-red-400' : 'bg-slate-500/10 text-slate-400'
+                            }`}>
+                            {trend}
+                        </div>
+                    </div>
+                    {subtext && <div className="text-[10px] text-slate-400 mt-1">{subtext}</div>}
+                </div>
+            );
+
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div>
+                        <h3 className="text-2xl font-bold text-white mb-1">Quarterly Results Timeline</h3>
+                        <p className="text-xs text-slate-400">{company_name || symbol} - Last {quarters.length} quarters</p>
+                    </div>
+
+                    {alerts && alerts.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            {alerts.map((alert, i) => (
+                                <div key={i} className={`text-xs px-4 py-3 rounded-lg border ${alert.type === 'WARNING' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                    }`}>
+                                    <span className="font-black mr-2">[{alert.type}]</span> {alert.message}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <TrendCard label="Revenue Trend" value={`${trends.avg_revenue_growth}%`} trend={trends.revenue_trend} subtext="Avg QoQ Growth" />
+                        <TrendCard label="Profit Trend" value={`${trends.avg_profit_growth}%`} trend={trends.profit_trend} subtext="Avg QoQ Growth" />
+                        <TrendCard label="Margin Analysis" value={`${trends.avg_margin}%`} trend={trends.margin_trend} subtext="Operating Consistency" />
+                        <TrendCard label="Execution Score" value={`${trends.quarters_with_growth}/${trends.total_quarters}`} trend={trends.consistency} subtext="Growth Quarters" />
+                    </div>
+
+                    <div className="flex gap-2">
+                        {['revenue', 'profit', 'margin', 'combined'].map(mode => (
+                            <button key={mode} onClick={() => setViewMode(mode)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'}`}>
+                                {mode}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="glass p-6 rounded-2xl border-white/5 h-[350px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            {viewMode === 'revenue' ? (
+                                <ComposedChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="quarter" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="left" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <Bar yAxisId="left" dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Revenue (INR Cr)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="revenue_growth" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', r: 4 }} name="QoQ Growth %" />
+                                </ComposedChart>
+                            ) : viewMode === 'profit' ? (
+                                <ComposedChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="quarter" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="left" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <Bar yAxisId="left" dataKey="profit" fill="#10b981" radius={[6, 6, 0, 0]} name="Profit (INR Cr)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="profit_growth" stroke="#f59e0b" strokeWidth={3} dot={{ fill: '#f59e0b', r: 4 }} name="QoQ Growth %" />
+                                </ComposedChart>
+                            ) : viewMode === 'margin' ? (
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="quarter" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <Line type="monotone" dataKey="margin" stroke="#f59e0b" strokeWidth={3} dot={{ fill: '#f59e0b', r: 4 }} name="Net Margin %" />
+                                    <Line type="monotone" dataKey="ebitda_margin" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: '#8b5cf6', r: 4 }} name="EBITDA Margin %" />
+                                </LineChart>
+                            ) : (
+                                <ComposedChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="quarter" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="left" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <Bar yAxisId="left" dataKey="revenue" fill="#3b82f6" fillOpacity={0.4} radius={[4, 4, 0, 0]} name="Revenue (INR Cr)" />
+                                    <Bar yAxisId="left" dataKey="profit" fill="#10b981" fillOpacity={0.4} radius={[4, 4, 0, 0]} name="Profit (INR Cr)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="margin" stroke="#f59e0b" strokeWidth={3} dot={{ fill: '#f59e0b', r: 4 }} name="Margin %" />
+                                </ComposedChart>
+                            )}
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="glass rounded-xl border-white/5 overflow-hidden">
+                        <table className="w-full text-left text-[11px]">
+                            <thead className="bg-white/5 border-b border-white/5">
+                                <tr>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black">Quarter</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Revenue (INR Cr)</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">QoQ Growth</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">YoY Growth</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Profit (INR Cr)</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">QoQ Growth</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Margin %</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">EBITDA Margin %</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {quarters.map((q, i) => (
+                                    <tr key={i} className={`hover:bg-white/5 transition-colors ${i === quarters.length - 1 ? 'bg-blue-500/10' : ''}`}>
+                                        <td className="px-4 py-3"><div className="font-bold text-white">{q.quarter}</div><div className="text-[9px] text-slate-500">{q.date}</div></td>
+                                        <td className="px-4 py-3 text-right font-mono text-white">{q.revenue.toLocaleString()}</td>
+                                        <td className={`px-4 py-3 text-right font-black ${q.revenue_growth_qoq > 0 ? 'text-emerald-400' : q.revenue_growth_qoq < 0 ? 'text-red-400' : 'text-slate-400'}`}>{formatSignedPercent(q.revenue_growth_qoq)}</td>
+                                        <td className={`px-4 py-3 text-right font-black ${q.revenue_growth_yoy > 0 ? 'text-emerald-400' : q.revenue_growth_yoy < 0 ? 'text-red-400' : 'text-slate-400'}`}>{formatSignedPercent(q.revenue_growth_yoy)}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-white">{q.profit.toLocaleString()}</td>
+                                        <td className={`px-4 py-3 text-right font-black ${q.profit_growth_qoq > 0 ? 'text-emerald-400' : q.profit_growth_qoq < 0 ? 'text-red-400' : 'text-slate-400'}`}>{q.profit_growth_qoq !== null && q.profit_growth_qoq !== undefined ? (q.profit_growth_qoq >= 900 ? 'Turnaround' : formatSignedPercent(q.profit_growth_qoq)) : '--'}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-300">{q.margin}%</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-300">{q.ebitda_margin}%</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="glass p-5 rounded-xl border-white/5 bg-slate-900/40">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">KEY INSIGHTS</div>
+                        <div className="space-y-2 text-xs">
+                            {trends.revenue_trend === 'GROWING' && (
+                                <div className="text-slate-300">Revenue shows consistent growth with average QoQ change of <span className="font-bold text-white">{trends.avg_revenue_growth}%</span>.</div>
+                            )}
+                            {trends.revenue_trend === 'DECLINING' && (
+                                <div className="text-slate-300">Revenue is declining with average QoQ change of <span className="font-bold text-red-400">{trends.avg_revenue_growth}%</span>.</div>
+                            )}
+                            {trends.margin_trend === 'EXPANDING' && (
+                                <div className="text-slate-300">Margins are expanding, indicating improving operational efficiency.</div>
+                            )}
+                            {trends.margin_trend === 'CONTRACTING' && (
+                                <div className="text-slate-300">Margins are contracting, indicating potential pricing or cost pressure.</div>
+                            )}
+                            {trends.profit_trend === 'GROWING' && trends.revenue_trend === 'GROWING' && (
+                                <div className="text-slate-300">Both revenue and profit are growing, indicating strong execution momentum.</div>
+                            )}
+                            {quarters.length > 0 && (
+                                <div className="text-slate-300">Latest quarter ({quarters[quarters.length - 1].quarter}): Revenue {quarters[quarters.length - 1].revenue.toLocaleString()} Cr, Profit {quarters[quarters.length - 1].profit.toLocaleString()} Cr, Margin {quarters[quarters.length - 1].margin}%.</div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="text-xs text-slate-500 text-center">Last updated: {new Date(data.timestamp).toLocaleString()}</div>
+                </div>
+            );
+        };
+        const PriceFundamentals = ({ symbol }) => {
+            const {
+                LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
+            } = window.Recharts;
+
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [years, setYears] = useState(5);
+            const [viewMode, setViewMode] = useState('price-eps');
+
+            useEffect(() => {
+                const fetchData = async () => {
+                    if (!symbol) return;
+                    try {
+                        setLoading(true);
+                        setError(null);
+                        const response = await fetch(`/api/price-fundamentals/${symbol}?years=${years}`);
+                        const result = await response.json();
+                        if (!response.ok) {
+                            throw new Error(result?.detail || 'Failed to load price fundamentals data');
+                        }
+                        setData(result);
+                    } catch (err) {
+                        setError(err.message || 'Failed to load data');
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                fetchData();
+            }, [symbol, years]);
+
+            if (loading) {
+                return (
+                    <div className="text-center py-32 text-slate-500 animate-pulse flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                        Computing Price vs Fundamentals Drift...
+                    </div>
+                );
+            }
+
+            if (error) {
+                return <div className="text-red-400 p-4 bg-red-950/20 border border-red-500/30 rounded-xl">Error: {error}</div>;
+            }
+
+            const dataPoints = data?.data || [];
+            if (!dataPoints.length) {
+                return <div className="text-slate-500 py-12 text-center">No annual history available for this analysis.</div>;
+            }
+
+            const divergence = data?.divergence || {};
+            const ratios = data?.ratios_trend || {};
+
+            const toIndex = (value, base) => {
+                if (value === null || value === undefined || isNaN(value) || base === null || base === undefined || isNaN(base) || base <= 0) {
+                    return null;
+                }
+                const result = Number(((value / base) * 100).toFixed(1));
+                return isNaN(result) ? null : result;
+            };
+
+            const chartData = dataPoints.map(point => ({
+                ...point,
+                priceIndex: toIndex(point.price, dataPoints[0].price),
+                epsIndex: toIndex(point.eps, dataPoints[0].eps),
+                salesIndex: toIndex(point.sales_per_share, dataPoints[0].sales_per_share),
+                bvIndex: toIndex(point.book_value, dataPoints[0].book_value)
+            }));
+
+            const alertClass = divergence.alert_level === 'CRITICAL'
+                ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                : divergence.alert_level === 'HIGH'
+                    ? 'bg-orange-500/10 border-orange-500/20 text-orange-300'
+                    : divergence.alert_level === 'MODERATE'
+                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300';
+
+            const panel = 'glass rounded-xl border border-white/5';
+
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-1">
+                                Valuation Drift Monitor
+                            </div>
+                            <h3 className="text-xl font-black text-white tracking-tight">Price vs Fundamentals</h3>
+                            <p className="text-xs text-slate-400 mt-1">{data?.company_name || symbol}</p>
+                        </div>
+
+                        <div className="flex gap-2">
+                            {[3, 5, 7, 10].map(option => (
+                                <button
+                                    key={option}
+                                    onClick={() => setYears(option)}
+                                    className={`px-3 py-1.5 text-[10px] rounded-lg font-black uppercase tracking-widest transition-all ${years === option
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                                        }`}
+                                >
+                                    {option}Y
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {divergence.alert_level && (
+                        <div className={`${panel} p-4 ${alertClass}`}>
+                            <div className="text-[10px] font-black uppercase tracking-widest mb-2">
+                                {divergence.alert_level} Divergence
+                            </div>
+                            <div className="text-sm leading-relaxed">{divergence.analysis}</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-xs">
+                                <div><span className="text-slate-400">Price CAGR:</span> <span className="font-bold">{divergence.price_cagr}%</span></div>
+                                <div><span className="text-slate-400">EPS CAGR:</span> <span className="font-bold">{divergence.eps_cagr}%</span></div>
+                                <div><span className="text-slate-400">Sales CAGR:</span> <span className="font-bold">{divergence.sales_cagr}%</span></div>
+                                <div><span className="text-slate-400">Valuation:</span> <span className="font-bold">{divergence.valuation_trend || 'UNKNOWN'}</span></div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex gap-2">
+                        {[
+                            { id: 'price-eps', label: 'Price vs EPS' },
+                            { id: 'price-sales', label: 'Price vs Sales' },
+                            { id: 'ratios', label: 'PE/PS/PB' }
+                        ].map(mode => (
+                            <button
+                                key={mode.id}
+                                onClick={() => setViewMode(mode.id)}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode.id
+                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                                    : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                {mode.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className={`${panel} p-6 h-[360px]`}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            {viewMode === 'price-eps' ? (
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="fiscal_year" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <ReferenceLine y={100} stroke="#334155" strokeDasharray="4 4" />
+                                    <Line type="monotone" dataKey="priceIndex" name="Price Index" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
+                                    <Line type="monotone" dataKey="epsIndex" name="EPS Index" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
+                                </LineChart>
+                            ) : viewMode === 'price-sales' ? (
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="fiscal_year" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <ReferenceLine y={100} stroke="#334155" strokeDasharray="4 4" />
+                                    <Line type="monotone" dataKey="priceIndex" name="Price Index" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
+                                    <Line type="monotone" dataKey="salesIndex" name="Sales/Share Index" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} />
+                                    <Line type="monotone" dataKey="bvIndex" name="Book Value Index" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+                                </LineChart>
+                            ) : (
+                                <LineChart data={dataPoints}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                    <XAxis dataKey="fiscal_year" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px' }} />
+                                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                    <Line type="monotone" dataKey="pe" name="PE" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
+                                    <Line type="monotone" dataKey="ps" name="PS" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
+                                    <Line type="monotone" dataKey="pb" name="PB" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+                                </LineChart>
+                            )}
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className={`${panel} p-4`}>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">PE Ratio</div>
+                            <div className="text-2xl font-black text-white">{ratios.current_pe ? `${ratios.current_pe}x` : '-'}</div>
+                            <div className="text-xs text-slate-400 mt-2">Trend: {ratios.pe_trend || 'N/A'}</div>
+                            <div className="text-xs text-slate-500">Range: {ratios.pe_min || '-'}x to {ratios.pe_max || '-'}x</div>
+                        </div>
+                        <div className={`${panel} p-4`}>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">PS Ratio</div>
+                            <div className="text-2xl font-black text-white">{ratios.current_ps ? `${ratios.current_ps}x` : '-'}</div>
+                            <div className="text-xs text-slate-400 mt-2">Trend: {ratios.ps_trend || 'N/A'}</div>
+                            <div className="text-xs text-slate-500">Average: {ratios.avg_ps || '-'}x</div>
+                        </div>
+                        <div className={`${panel} p-4`}>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">PB Ratio</div>
+                            <div className="text-2xl font-black text-white">{ratios.current_pb ? `${ratios.current_pb}x` : '-'}</div>
+                            <div className="text-xs text-slate-400 mt-2">Trend: {ratios.pb_trend || 'N/A'}</div>
+                            <div className="text-xs text-slate-500">Average: {ratios.avg_pb || '-'}x</div>
+                        </div>
+                    </div>
+
+                    <div className="glass rounded-xl border-white/5 overflow-x-auto">
+                        <table className="w-full text-left text-[11px]">
+                            <thead className="bg-white/5 border-b border-white/5">
+                                <tr>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black">Year</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Price</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">EPS</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Sales/Share</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">Book Value</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">PE</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">PS</th>
+                                    <th className="px-4 py-3 text-slate-500 uppercase font-black text-right">PB</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {dataPoints.map((point, idx) => (
+                                    <tr key={idx} className="hover:bg-white/5 transition-colors">
+                                        <td className="px-4 py-3 font-bold text-white">{point.fiscal_year}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-slate-300">{point.price}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-slate-300">{point.eps}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-slate-300">{point.sales_per_share}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-slate-300">{point.book_value}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-blue-400">{point.pe || '-'}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-violet-400">{point.ps || '-'}</td>
+                                        <td className="px-4 py-3 text-right font-mono text-amber-400">{point.pb || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        const GovernanceChecklist = ({ data }) => {
+            if (!data) return <div className="p-4 text-slate-500">No governance data available.</div>;
+
+            const IconCheck = () => <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>;
+            const IconCross = () => <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>;
+
+            const items = [
+                { label: "Return on Equity (ROE)", threshold: "> 15%", value: `${data.roe}%`, pass: data.roe > 15 },
+                { label: "Debt to Equity", threshold: data.is_financial ? "N/A (Bank)" : "< 1.0", value: data.is_financial ? "N/A" : data.debt_to_equity, pass: data.is_financial || data.debt_to_equity < 1.0 },
+                { label: "Sales Growth (YoY)", threshold: "> 10%", value: `${data.sales_growth}%`, pass: data.sales_growth > 10 },
+                { label: "Profit Growth (YoY)", threshold: "> 15%", value: `${data.profit_growth}%`, pass: data.profit_growth > 15 },
+                { label: "Promoter Holding", threshold: "> 40%", value: `${data.promoter_holding}%`, pass: data.promoter_holding > 40 },
+                { label: "Pledged Percentage", threshold: "< 5%", value: `${data.pledged_pct}%`, pass: data.pledged_pct < 5 },
+                { label: "CFO / PAT Ratio", threshold: "> 0.8", value: data.cfo_pat_ratio, pass: data.cfo_pat_ratio > 0.8 },
+            ];
+
+            return (
+                <div className="glass p-6 rounded-xl border border-white/5 animate-fade-in mt-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                            <Icons.Shield />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Governance Audit</h3>
+                            <p className="text-xs text-slate-400">8-Point Forensic Checklist</p>
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-lg border border-white/5">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-white/5">
+                                <tr className="text-slate-500 border-b border-white/5 text-[10px] uppercase font-black tracking-widest">
+                                    <th className="py-3 pl-4">Criterion</th>
+                                    <th className="py-3">Threshold</th>
+                                    <th className="py-3">Actual Value</th>
+                                    <th className="py-3 text-right pr-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 bg-slate-900/30">
+                                {items.map((item, i) => (
+                                    <tr key={i} className="hover:bg-white/5 transition-colors group">
+                                        <td className="py-3 pl-4 font-bold text-slate-300 group-hover:text-white transition-colors">{item.label}</td>
+                                        <td className="py-3 text-slate-500 font-mono text-xs">{item.threshold}</td>
+                                        <td className="py-3 font-mono text-white text-xs">{item.value}</td>
+                                        <td className="py-3 text-right pr-4">
+                                            {item.pass ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                                    <IconCheck /> PASS
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 text-[10px] font-black uppercase tracking-wider border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]">
+                                                    <IconCross /> FAIL
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        const ScoreHistoryChart = ({ data }) => {
+            if (!data || data.length === 0) return null;
+
+            return (
+                <div className="glass p-6 rounded-xl border border-white/5 animate-fade-in mb-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                            <Icons.TrendingUp />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Score History</h3>
+                            <p className="text-xs text-slate-400">Historical Performance Trend</p>
+                        </div>
+                    </div>
+                    <div className="h-48 w-full">
+                        <Recharts.ResponsiveContainer width="100%" height="100%">
+                            <Recharts.AreaChart data={data}>
+                                <defs>
+                                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <Recharts.XAxis
+                                    dataKey="date"
+                                    tick={{ fill: '#64748b', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    minTickGap={30}
+                                />
+                                <Recharts.YAxis
+                                    domain={[0, 100]}
+                                    hide={true}
+                                />
+                                <Recharts.Tooltip
+                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
+                                    itemStyle={{ color: '#fff' }}
+                                    labelStyle={{ color: '#94a3b8' }}
+                                />
+                                <Recharts.Area
+                                    type="monotone"
+                                    dataKey="score"
+                                    stroke="#10b981"
+                                    strokeWidth={2}
+                                    fillOpacity={1}
+                                    fill="url(#colorScore)"
+                                />
+                            </Recharts.AreaChart>
+                        </Recharts.ResponsiveContainer>
+                    </div>
+                </div>
+            );
+        };
+
+
+        const Modal = ({ show, onClose, title, stockData, content, valuation, peers, financials, technicals, shareholding, news, governance, history, thesis, loading }) => {
+            const [activeTab, setActiveTab] = useState('overview');
+
+            useEffect(() => {
+                if (!show) return;
+                const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+                window.addEventListener('keydown', handleEsc);
+                return () => window.removeEventListener('keydown', handleEsc);
+            }, [show, onClose]);
+
+            if (!show) return null;
+
+            const tabs = [
+                { id: 'overview', label: 'Overview', icon: <Icons.Search /> },
+                { id: 'governance', label: 'Governance', icon: <Icons.Shield /> },
+                { id: 'technicals', label: 'Technicals', icon: <Icons.TrendingUp /> },
+                { id: 'shareholding', label: 'Ownership', icon: <Icons.Shield /> },
+
+                { id: 'peers', label: 'Peer Comparison', icon: <Icons.Users /> },
+            ];
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/70 animate-fade-in" onClick={onClose}>
+                    <div className="glass bg-slate-900/90 w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-700" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center p-5 border-b border-white/5 bg-white/5">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 text-sm">AI</span>
+                                {title}
+                            </h2>
+                            <div className="flex items-center gap-4">
+                                <a
+                                    href={`/api/reports/html/${title.includes(':') ? title.split(':')[1].trim() : title}`}
+                                    target="_blank"
+                                    className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                                >
+                                    <Icons.Trending />
+                                    Premium Report
+                                </a>
+                                <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 p-1.5 rounded-full hover:bg-white/10">
+                                    <Icons.Close />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Navigation Tabs */}
+                        {!loading && (
+                            <div className="flex border-b border-white/5 bg-slate-900/50 px-4">
+                                {tabs.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === tab.id ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'}`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {tab.icon}
+                                            {tab.label}
+                                        </div>
+                                        {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 animate-slide-in-right"></div>}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center py-32 text-slate-500">
+                                    <div className="w-12 h-12 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin mb-6"></div>
+                                    <p className="animate-pulse">Deep-Scanning Market DNA...</p>
+                                </div>
+                            ) : (
+                                <div className="max-w-4xl mx-auto">
+                                    {activeTab === 'overview' && (
+                                        <div className="animate-fade-in">
+                                            {stockData && stockData.ML_Predicted_Return != null && (
+                                                <div className="glass p-6 rounded-xl border border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.1)] mb-6">
+                                                    <div className="flex items-center justify-between mb-6">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-lg font-bold text-white leading-tight">Hybrid ML Prediction</h3>
+                                                                <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">XGBoost Interpetability</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`text-2xl font-black font-mono ${stockData.ML_Predicted_Return > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {stockData.ML_Predicted_Return > 0 ? '+' : ''}{(stockData.ML_Predicted_Return).toFixed(1)}% <span className="text-xs text-slate-500">Exp. Return</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-3 ml-1">SHAP Factor Breakdown</div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                                        {Object.entries(JSON.parse(stockData.SHAP_Breakdown || '{}')).map(([factor, impact]) => (
+                                                            <div key={factor} className="flex flex-col p-3 bg-slate-900/60 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                                                                <span className="text-[9px] uppercase font-bold text-slate-400 mb-1">{factor.replace('_', ' ')}</span>
+                                                                <span className={`text-sm font-black font-mono ${impact > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                                    {impact > 0 ? '+' : ''}{(impact * 100).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <ValuationDisplay metrics={valuation} />
+                                            <ScoreHistoryChart data={history} />
+
+                                            {thesis && thesis.thesis && (
+                                                <div className="glass p-6 rounded-xl border-l-[6px] border-l-blue-500 shadow-[0_8px_30px_rgba(59,130,246,0.2)] bg-blue-500/5 mb-8 italic relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 -mt-4 -mr-4 text-blue-500/10 pointer-events-none">
+                                                        <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+                                                    </div>
+                                                    <div className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-400 mb-3 flex items-center gap-2 relative z-10">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                                        Sovereign AI Thesis
+                                                    </div>
+                                                    <p className="text-[15px] text-slate-300 leading-relaxed font-serif relative z-10 drop-shadow-sm">"{thesis.thesis}"</p>
+                                                </div>
+                                            )}
+
+                                            <div className="prose prose-invert max-w-none mb-8" dangerouslySetInnerHTML={{ __html: marked.parse(content || "") }} />
+
+                                            <FinancialsChart data={financials} />
+                                            <NewsFeed news={news} />
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'governance' && (
+                                        <div className="animate-fade-in">
+                                            <GovernanceChecklist data={governance} />
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'technicals' && (
+                                        <div className="animate-fade-in">
+                                            <TechnicalMeter data={technicals} />
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'shareholding' && (
+                                        <div className="animate-fade-in">
+                                            <ShareholdingRadar data={shareholding} />
+                                        </div>
+                                    )}
+
+
+
+                                    {activeTab === 'peers' && (
+                                        <div className="animate-fade-in">
+                                            <PeerComparison data={peers} symbol={valuation?.symbol || title.split(': ')[1]} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-white/5 bg-slate-900/50 flex justify-between items-center px-8 text-xs">
+                            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Institutional Terminal v3.5-resilient
+                            </div>
+                            <button onClick={onClose} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-white/5 hover:border-white/20">Close Audit</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Institutional Hooks ---
+        const useBatchedPriceSimulation = (initialData) => {
+            const [data, setData] = useState(initialData);
+            const bufferRef = useRef([]);
+            const lastUpdateRef = useRef(Date.now());
+
+            useEffect(() => {
+                setData(initialData);
+            }, [initialData]);
+
+            useEffect(() => {
+                if (!initialData || initialData.length === 0) return;
+
+                // --- STRESS HARNESS INTEGRATION ---
+                if (window.stressEngine && window.stressEngine.active) {
+                    console.log("Hooking into Stress Engine...");
+                    const unsubscribe = window.stressEngine.subscribe((events) => {
+                        bufferRef.current.push(...events);
+
+                        if (events.length > 0) {
+                            window.stressEngine.reportLag(events[0].timestamp);
+                        }
+                    });
+
+                    const interval = setInterval(() => {
+                        const now = Date.now();
+                        if (now - lastUpdateRef.current > 100) {
+                            if (bufferRef.current.length > 0) {
+                                setData(prev => {
+                                    const next = [...prev];
+                                    const updatesMap = new Map();
+
+                                    bufferRef.current.forEach(u => {
+                                        if (u.symbol.startsWith('STRESS_')) {
+                                            const id = parseInt(u.symbol.split('_')[1]);
+                                            const targetRequest = initialData[id % initialData.length];
+                                            if (targetRequest) {
+                                                updatesMap.set(targetRequest.symbol, { ...u, symbol: targetRequest.symbol });
+                                            }
+                                        } else {
+                                            updatesMap.set(u.symbol, u);
+                                        }
+                                    });
+
+                                    bufferRef.current = [];
+                                    lastUpdateRef.current = now;
+
+                                    return next.map(s => {
+                                        if (updatesMap.has(s.symbol)) {
+                                            const u = updatesMap.get(s.symbol);
+                                            return { ...s, prevPrice: s.price, price: u.price, flash: u.flash };
+                                        }
+                                        return s.flash ? { ...s, flash: null } : s;
+                                    });
+                                });
+                            }
+                        }
+                    }, 50);
+
+                    return () => {
+                        unsubscribe();
+                        clearInterval(interval);
+                    };
+                }
+
+                const interval = setInterval(() => {
+                    // Check Market Status
+                    const status = getMarketStatus();
+                    // FORCE BYPASS for local demo presentation purposes always simulating ticks:
+                    // if (status.label !== 'MARKET OPEN' && !window.stressEngine?.active) {
+                    //     return;
+                    // }
+
+                    const updateCount = Math.floor(Math.random() * 10) + 5;
+                    const updates = [];
+
+                    for (let i = 0; i < updateCount; i++) {
+                        const idx = Math.floor(Math.random() * initialData.length);
+                        const stock = initialData[idx];
+                        if (!stock) continue;
+
+                        const change = (Math.random() - 0.5) * 0.005; // 0.5% max volatility
+                        updates.push({
+                            symbol: stock.symbol,
+                            price: stock.price * (1 + change),
+                            flash: change > 0 ? 'up' : 'down'
+                        });
+                    }
+
+                    // Add to buffer
+                    bufferRef.current.push(...updates);
+
+                    const now = Date.now();
+                    if (now - lastUpdateRef.current > 100) {
+                        if (bufferRef.current.length > 0) {
+                            setData(prev => {
+                                const next = [...prev];
+                                const updatesMap = new Map();
+                                bufferRef.current.forEach(u => updatesMap.set(u.symbol, u));
+
+                                bufferRef.current = []; // Clear buffer
+                                lastUpdateRef.current = now;
+
+                                return next.map(s => {
+                                    if (updatesMap.has(s.symbol)) {
+                                        const u = updatesMap.get(s.symbol);
+                                        return { ...s, prevPrice: s.price, price: u.price, flash: u.flash };
+                                    }
+                                    return s.flash ? { ...s, flash: null } : s;
+                                });
+                            });
+                        }
+                    }
+                }, 50); 
+
+                return () => clearInterval(interval);
+            }, [initialData]);
+
+            return data;
+        };
+
+        const App = () => {
+            // Recharts Loading State - Forces re-render when library is ready
+            const [chartsReady, setChartsReady] = useState(!!window.Recharts);
+            useEffect(() => {
+                if (chartsReady) return;
+                const interval = setInterval(() => {
+                    if (window.Recharts) {
+                        setChartsReady(true);
+                        clearInterval(interval);
+                    }
+                }, 100);
+                return () => clearInterval(interval);
+            }, [chartsReady]);
+
+            const [data, setData] = useState([]);
+            const [rejections, setRejections] = useState([]);
+            const [regimeStatus, setRegimeStatus] = useState({ regime: 'LOADING', vix: 0, vix_threshold: 18.0, votes: {}, is_forced: false });
+            const [performance, setPerformance] = useState({ strategy: 0, benchmark: 0, alpha: 0, win_rate: 0, avg_hold: '-' });
+            const [slippageStats, setSlippageStats] = useState([]);
+            const [backtestMetrics, setBacktestMetrics] = useState({ status: "pending", cagr: "0.0", win_rate: "0.0", sharpe: "0.0", max_dd: "0.0", sortino: "0.0", calmar: "0.0" });
+
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [lastUpdated, setLastUpdated] = useState(null);
+            const [latestAlert, setLatestAlert] = useState(null);
+
+            // Interaction State
+            const [searchTerm, setSearchTerm] = useState("");
+            const [activeFilter, setActiveFilter] = useState("ALL");
+            const [sortConfig, setSortConfig] = useState({ key: 'score', direction: 'desc' });
+
+            const [visibleCount, setVisibleCount] = useState(50);
+            const searchInputRef = useRef(null);
+            const abortControllerRef = useRef(null);
+            const filterRef = useRef(activeFilter);
+            
+            useEffect(() => {
+                filterRef.current = activeFilter;
+            }, [activeFilter]);
+
+            // --- Next Level Search Engine ---
+            const checkSmartSearch = (stock, query) => {
+                if (!query) return 0;
+                const q = query.toLowerCase().trim();
+                const sym = stock.symbol.toLowerCase().replace('.ns', '');
+                const sec = (stock.sector || '').toLowerCase();
+
+                // 1. Special Commands
+                if (q.startsWith('/')) {
+                    if (q === '/bull' && stock.technical_signal === 'Bullish') return 100;
+                    if (q === '/bear' && stock.technical_signal === 'Bearish') return 100;
+                    if (q === '/elite' && (stock.score || 0) >= 78 && (stock.value_gap || 0) >= -10) return 100;
+                    if (q === '/value' && (stock.value_gap || 0) > 20) return 100;
+                    if (q === '/growth' && (stock.sales_growth || 0) > 20) return 100;
+                    return 0;
+                }
+
+                // 2. Numeric Filters
+                if (q.startsWith('>')) {
+                    const val = parseFloat(q.substring(1));
+                    if (!isNaN(val) && stock.score >= val) return 100;
+                }
+
+                // 3. Relevancy Scoring
+                if (sym === q) return 100;       // Exact Symbol
+                if (sym.startsWith(q)) return 80; // Starts With
+                if (sym.includes(q)) return 60;   // Contains Symbol
+                if (sec.includes(q)) return 40;   // Sector Match
+
+                // 4. Rating/Trend Match
+                if ((stock.rating || '').toLowerCase().includes(q)) return 50;
+                if ((stock.technical_signal || '').toLowerCase().includes(q)) return 45;
+
+                return 0;
+            };
+
+            // Modal State
+            const [modalOpen, setModalOpen] = useState(false);
+            const [activeStock, setActiveStock] = useState(null);
+            const [reportContent, setReportContent] = useState("");
+            const [reportLoading, setReportLoading] = useState(false);
+
+            const fetchInitialData = async (retryCount = 0) => {
+                setLoading(true);
+                setError(null);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+                try {
+                    const stocksRes = await fetch('/api/stocks', { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    
+                    if (!stocksRes.ok) throw new Error(`HTTP ${stocksRes.status}`);
+                    
+                    const stocksData = await stocksRes.json();
+                    if (Array.isArray(stocksData)) {
+                        setData(stocksData);
+                        setLastUpdated(new Date());
+                        // Fetch non-critical data after successful initial load
+                        fetchRejections();
+                        fetchRegime();
+                        fetchPerformance();
+                        fetchSlippageStats();
+                        fetchBacktestMetrics();
+                    } else {
+                        throw new Error("Invalid data format received");
+                    }
+                } catch (e) {
+                    console.error("Initial Fetch Error:", e);
+                    if (retryCount < 2) {
+                        console.log(`Retrying initial fetch... (${retryCount + 1}/2)`);
+                        setTimeout(() => fetchInitialData(retryCount + 1), 2000);
+                    } else {
+                        setError(e.name === 'AbortError' ? "Request Timed Out (Server Busy)" : e.message);
+                    }
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                fetchInitialData();
+                const stockInt = setInterval(fetchData, 15000);
+                const rejInt = setInterval(fetchRejections, 10000);
+                const regInt = setInterval(fetchRegime, 60000);
+                const perfInt = setInterval(fetchPerformance, 30000);
+                const diagInt = setInterval(simulateDiagnostics, 2000);
+                const slipInt = setInterval(fetchSlippageStats, 60000);
+                const backtestInt = setInterval(fetchBacktestMetrics, 60000);
+
+
+                return () => {
+                    clearInterval(stockInt);
+                    clearInterval(rejInt);
+                    clearInterval(regInt);
+                    clearInterval(perfInt);
+                    clearInterval(diagInt);
+                    clearInterval(slipInt);
+                    clearInterval(backtestInt);
+                };
+            }, []);
+
+            const [diagnostics, setDiagnostics] = useState({ latency: 14, queue: 0 });
+            const simulateDiagnostics = () => {
+                const newLatency = Math.floor(12 + Math.random() * 6);
+                const newQueue = Math.random() > 0.8 ? Math.floor(Math.random() * 3) : 0;
+
+                setDiagnostics(prev => {
+                    if (prev.latency === newLatency && prev.queue === newQueue) return prev;
+                    return { latency: newLatency, queue: newQueue };
+                });
+            };
+
+            // Crisis Mode Logic
+            const isCrisisMode = useMemo(() => {
+                return (regimeStatus?.vix > 25) || (rejections.length > 5); // Simple heuristic
+            }, [regimeStatus, rejections]);
+
+            // Keyboard Shortcut for Search
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+                        e.preventDefault();
+                        searchInputRef.current?.focus();
+                    }
+                    if (e.key === 'Escape') {
+                        if (document.activeElement === searchInputRef.current) {
+                            searchInputRef.current?.blur();
+                        }
+                        setSearchTerm("");
+                        setActiveFilter("ALL");
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, []);
+
+            const fetchData = async (currentFilter = filterRef.current) => {
+                try {
+                    const t = new Date().getTime();
+                    const endpoint = currentFilter === 'HUNT' ? '/api/multibagger-hunt' : '/api/stocks';
+                    const res = await fetch(`${endpoint}?t=${t}`);
+                    const json = await res.json();
+                    if (Array.isArray(json)) {
+                        setData(json);
+                        setLastUpdated(new Date());
+                    }
+                } catch (e) {
+                    console.error("Fetch Error:", e);
+                }
+            };
+
+            const fetchRejections = async () => {
+                try {
+                    const res = await fetch('/api/rejections');
+                    const json = await res.json();
+                    if (Array.isArray(json)) {
+                        setRejections(json);
+                        if (json.length > 0) {
+                            setLatestAlert(json[0]);
+                        }
+                    }
+                } catch (e) { }
+            };
+
+            const fetchPerformance = async () => {
+                try {
+                    const res = await fetch('/api/performance');
+                    const json = await res.json();
+                    if (json.strategy) setPerformance(json);
+                } catch (e) { }
+            };
+
+            const fetchRegime = async () => {
+                try {
+                    const res = await fetch('/api/regime_status');
+                    const json = await res.json();
+                    if (json.regime) setRegimeStatus(json);
+                } catch (e) { }
+            };
+
+            const fetchSlippageStats = async () => {
+                try {
+                    const res = await fetch('/api/slippage_stats');
+                    const json = await res.json();
+                    if (Array.isArray(json)) setSlippageStats(json);
+                } catch (e) { }
+            };
+
+            const fetchBacktestMetrics = async () => {
+                try {
+                    const res = await fetch('/api/backtest-metrics');
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setBacktestMetrics(json);
+                    }
+                } catch (e) { }
+            };
+
+            const handleOverride = async (regime) => {
+                try {
+                    const res = await fetch(`/api/admin/force_regime?regime=${regime}`, { method: 'POST' });
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        // Immediately fetch to update UI
+                        fetchRegime();
+                    } else {
+                        alert("Failed to override: " + json.error);
+                    }
+                } catch (e) {
+                    alert("Error calling override API");
+                }
+            };
+
+            // Use the Simulation Hook (Batched for Stability)
+            const simulatedData = useBatchedPriceSimulation(data);
+
+            const [activeValuation, setActiveValuation] = useState(null);
+            const [activePeers, setActivePeers] = useState(null);
+            const [activeFinancials, setActiveFinancials] = useState(null);
+            const [activeTechnicals, setActiveTechnicals] = useState(null);
+            const [activeShareholding, setActiveShareholding] = useState(null);
+            const [activeNews, setActiveNews] = useState(null);
+            const [activeGovernance, setActiveGovernance] = useState(null);
+            const [activeHistory, setActiveHistory] = useState(null);
+            const [activeThesis, setActiveThesis] = useState(null);
+
+            const handleRowClick = async (symbol) => {
+                // Abort previous request if active
+                if (abortControllerRef.current) {
+                    abortControllerRef.current.abort();
+                }
+                const controller = new AbortController();
+                abortControllerRef.current = controller;
+                const signal = controller.signal;
+
+                setActiveStock(symbol);
+                setModalOpen(true);
+                setReportLoading(true);
+                setReportContent("");
+                setActiveValuation(null);
+                setActivePeers(null);
+                setActiveFinancials(null);
+                setActiveTechnicals(null);
+                setActiveShareholding(null);
+                setActiveNews(null);
+                setActiveGovernance(null);
+                setActiveHistory(null);
+                setActiveThesis(null);
+
+                try {
+                    // Parallel Fetch with Abort Signal
+                    const [reportRes, valRes, peersRes, finRes, techRes, shareRes, newsRes, govRes, histRes, thesisRes] = await Promise.all([
+                        fetch(`/api/reports/${symbol}`, { signal }),
+                        fetch(`/api/valuation/${symbol}`, { signal }),
+                        fetch(`/api/peers/${symbol}`, { signal }),
+                        fetch(`/api/financials/${symbol}`, { signal }),
+                        fetch(`/api/technicals/${symbol}`, { signal }),
+                        fetch(`/api/shareholding/${symbol}`, { signal }),
+                        fetch(`/api/news/${symbol}`, { signal }),
+                        fetch(`/api/governance/${symbol}`, { signal }),
+                        fetch(`/api/history/${symbol}`, { signal }),
+                        fetch(`/api/thesis/${symbol}`, { signal })
+                    ]);
+
+                    if (reportRes.ok) {
+                        const reportData = await reportRes.json();
+                        setReportContent(reportData.content);
+                    } else {
+                        setReportContent("Report generation failed.");
+                    }
+
+                    if (valRes.ok) setActiveValuation(await valRes.json());
+                    if (peersRes.ok) setActivePeers(await peersRes.json());
+                    if (finRes.ok) setActiveFinancials(await finRes.json());
+                    if (techRes.ok) setActiveTechnicals(await techRes.json());
+                    if (shareRes.ok) setActiveShareholding(await shareRes.json());
+                    if (newsRes.ok) setActiveNews(await newsRes.json());
+                    if (govRes.ok) setActiveGovernance(await govRes.json());
+                    if (histRes.ok) setActiveHistory(await histRes.json());
+                    if (thesisRes.ok) setActiveThesis(await thesisRes.json());
+
+
+                } catch (e) {
+                    if (e.name === 'AbortError') {
+                        console.log('Fetch aborted for', symbol);
+                    } else {
+                        console.error("Modal Fetch Error:", e);
+                        setReportContent("Error loading data.");
+                    }
+                } finally {
+                    if (!signal.aborted) {
+                        setReportLoading(false);
+                        abortControllerRef.current = null;
+                    }
+                }
+            };
+
+            const clearSearch = () => {
+                setSearchTerm("");
+                searchInputRef.current?.focus();
+            };
+
+            const handleSort = (key) => {
+                let direction = 'desc';
+                if (sortConfig.key === key && sortConfig.direction === 'desc') {
+                    direction = 'asc';
+                }
+                setSortConfig({ key, direction });
+            };
+
+            // --- Process Data ---
+            const processedData = useMemo(() => {
+                let filtered = [...simulatedData];
+
+                // 1. Search
+                // 1. Search (Next Level)
+                if (searchTerm) {
+                    filtered = filtered.map(s => ({
+                        ...s,
+                        relevance: checkSmartSearch(s, searchTerm)
+                    })).filter(s => s.relevance > 0);
+
+                    // Sort by relevance if searching
+                    filtered.sort((a, b) => b.relevance - a.relevance);
+                }
+
+                // 2. Quick Filters
+                if (activeFilter === "ELITE") filtered = filtered.filter(s => (s.score || 0) >= 78 && (s.value_gap || 0) >= -10);
+                if (activeFilter === "GROWTH") filtered = filtered.filter(s => (s.sales_growth || 0) > 20);
+                if (activeFilter === "VALUE") filtered = filtered.filter(s => (s.value_gap || 0) > 20);
+                if (activeFilter === "MOMENTUM") filtered = filtered.filter(s => s.technical_signal === 'Bullish');
+
+                // 3. Sort
+                filtered.sort((a, b) => {
+                    const valA = a[sortConfig.key];
+                    const valB = b[sortConfig.key];
+
+                    if (valA === valB) return 0;
+                    if (valA === null || valA === undefined) return 1;
+                    if (valB === null || valB === undefined) return -1;
+
+                    const comparison = valA > valB ? 1 : -1;
+                    return sortConfig.direction === 'asc' ? comparison : -comparison;
+                });
+
+                return filtered;
+            }, [simulatedData, searchTerm, activeFilter, sortConfig]);
+
+            // KPIs
+            const stats = useMemo(() => ({
+                count: data.length,
+                elite: data.filter(s => (s.score || 0) >= 78 && (s.value_gap || 0) >= -10).length,
+                avgGrowth: data.length ? (data.reduce((acc, s) => acc + (s.sales_growth || 0), 0) / data.length).toFixed(1) : 0,
+            }), [data]);
+
+            if (loading) return (
+                <div className="min-h-screen flex items-center justify-center bg-[#0f172a]">
+                    <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 border-4 border-slate-800 border-t-emerald-500 rounded-full animate-spin mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]"></div>
+                        <div className="font-mono text-sm tracking-widest text-emerald-500 animate-pulse">INITIALIZING TERMINAL</div>
+                    </div>
+                </div>
+            );
+
+            if (error) return (
+                <div className="min-h-screen flex items-center justify-center bg-[#0f172a]">
+                    <div className="glass p-8 rounded-2xl border border-red-500/30 max-w-md text-center">
+                        <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6">
+                            <Icons.Close />
+                        </div>
+                        <h2 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Terminal Connection Failed</h2>
+                        <p className="text-slate-400 text-sm mb-6 leading-relaxed">{error}</p>
+                        <button 
+                            onClick={() => fetchInitialData()}
+                            className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl font-black uppercase tracking-widest transition-all"
+                        >
+                            Establish New Connection
+                        </button>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen pb-20 selection:bg-emerald-500/30">
+                    {/* Ticker Tape Overlay */}
+                    <TickerTape
+                        items={simulatedData.slice(0, 20).map(s => ({
+                            symbol: s.symbol.replace('.NS', ''),
+                            price: s.price,
+                            change: ((s.price - (s.prevPrice || s.price)) / (s.prevPrice || s.price)) * 100
+                        }))}
+                        visible={!isCrisisMode}
+                    />
+
+
+
+                    {/* Header */}
+                    <div className="sticky top-0 z-40 bg-[#0f172a]/70 backdrop-blur-2xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+
+                        <div className="max-w-[1920px] mx-auto px-6 h-20 flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                                <div className="w-11 h-11 bg-gradient-to-br from-emerald-400 via-emerald-600 to-emerald-900 rounded-xl flex items-center justify-center text-white font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] text-xl border border-emerald-400/30 ring-1 ring-emerald-500/50">
+                                    M
+                                </div>
+                                <div>
+                                    <h1 className="text-white font-black text-xl tracking-tight leading-none drop-shadow-md">Institutional Terminal</h1>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">v2.9.5 Live</span>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20 animate-pulse">PILOT MODE</span>
+                                        <span className="text-xs text-slate-500 font-mono flex items-center gap-1 cursor-pointer hover:text-white transition-colors" onClick={fetchData} title="Force Refresh">
+                                            {lastUpdated ? lastUpdated.toLocaleTimeString() : ''}
+                                            <svg className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                {/* Enhanced Search */}
+                                <div className="relative group w-96">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-400 transition-colors">
+                                        <Icons.Search />
+                                    </div>
+                                    <input
+                                        ref={searchInputRef}
+                                        type="text"
+                                        className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 block w-full pl-10 pr-10 p-2.5 transition-all outline-none placeholder-slate-500 font-mono"
+                                        placeholder="Search or Type /bull, >80..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            onClick={clearSearch}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white transition-colors"
+                                        >
+                                            <Icons.Clear />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="h-8 w-px bg-slate-800"></div>
+
+                                {/* Status */}
+                                <div className="flex items-center gap-6">
+                                    {/* Market Status */}
+                                    <MarketStatus />
+
+                                    <div className="h-8 w-px bg-slate-800"></div>
+
+                                    {/* Market Regime */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-right">
+                                            <div className="text-[9px] text-slate-500 uppercase font-black tracking-widest leading-tight">Consensus Regime</div>
+                                            <div className="text-white font-bold text-sm">{regimeStatus.regime}</div>
+                                            {regimeStatus.details?.hmm_regime && (
+                                                <div className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">
+                                                    HMM: <span className="text-blue-400">{regimeStatus.details.hmm_regime}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse"></div>
+                                    </div>
+
+                                    <div className="h-8 w-px bg-slate-800"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <main className="max-w-[1920px] mx-auto px-6 py-8">
+                        {/* Top Governance Header */}
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
+                            <div className="lg:col-span-1">
+                                <RegimeGauge status={regimeStatus} onOverride={handleOverride} />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <SlippageMonitor stats={slippageStats} />
+                            </div>
+                            <div className="lg:col-span-2">
+                                <ForensicsFeed rejections={rejections} />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <IntegrityWidget latency={diagnostics.latency} queue={diagnostics.queue} />
+                            </div>
+                        </div>
+
+                        {/* Middle KPIs */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <KpiCard title="ACTIVE UNIVERSE" value={stats.count} subtext="STOCKS SCANNED" />
+                            <KpiCard title="ELITE OPPORTUNITIES" value={stats.elite} subtext="SCORE ≥ 78 & FAIR VALUE" trend="up" />
+                            <KpiCard title="STRATEGY PERFORMANCE" value={`+${performance.strategy}%`} subtext={`ALPHA: +${performance.alpha}% v NIFTY`} trend="up" />
+                            <KpiCard title="SYSTEM RISK" value={regimeStatus.vix < 16 ? "LOW" : "HIGH"} subtext={`VIX ${regimeStatus.vix}`} trend={regimeStatus.vix < 16 ? "down" : "up"} />
+                        </div>
+
+                        {/* Backtest KPIs */}
+                        {backtestMetrics.status === 'success' && (
+                            <div className="glass p-5 rounded-2xl border-white/5 mb-8 bg-slate-900/40 animate-fade-in relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none group-hover:bg-emerald-500/20 transition-colors"></div>
+                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 relative z-10">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_#3b82f6]"></span>
+                                    PORTFOLIO BACKTEST: <span className="text-blue-400 font-black tracking-widest">5-YEAR WALK FORWARD OPTIMIZATION</span>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 relative z-10">
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-emerald-500/30 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">CAGR</div>
+                                        <div className="text-xl font-black text-emerald-400 font-mono tracking-tighter">{backtestMetrics.cagr}%</div>
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-white/20 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Win Rate</div>
+                                        <div className="text-xl font-black text-white font-mono tracking-tighter">{backtestMetrics.win_rate}%</div>
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-red-500/30 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Max Drawdown</div>
+                                        <div className="text-xl font-black text-red-400 font-mono tracking-tighter">{backtestMetrics.max_dd}%</div>
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-white/20 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sharpe Ratio</div>
+                                        <div className="text-xl font-black text-white font-mono tracking-tighter">{backtestMetrics.sharpe}</div>
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-white/20 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sortino Ratio</div>
+                                        <div className="text-xl font-black text-white font-mono tracking-tighter">{backtestMetrics.sortino}</div>
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-lg p-3 border border-white/5 hover:border-white/20 transition-colors">
+                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Calmar Ratio</div>
+                                        <div className="text-xl font-black text-white font-mono tracking-tighter">{backtestMetrics.calmar}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Search & Filter Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        setActiveFilter("ALL");
+                                        if (activeFilter === 'HUNT') {
+                                            fetchData("ALL");
+                                        }
+                                    }}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all border ${activeFilter === 'ALL' ? 'bg-white text-slate-900 border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'}`}
+                                >
+                                    All Stocks
+                                </button>
+                                {['HUNT', 'ELITE', 'GROWTH', 'VALUE', 'MOMENTUM'].map(filter => (
+                                    <button
+                                        key={filter}
+                                        onClick={() => {
+                                            setActiveFilter(filter);
+                                            if (filter === 'HUNT' || activeFilter === 'HUNT') {
+                                                fetchData(filter);
+                                            }
+                                        }}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all border ${activeFilter === filter ? (filter === 'HUNT' ? 'bg-orange-500 text-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]' : 'bg-emerald-500 text-white border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]') : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'}`}
+                                    >
+                                        {filter}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="text-[10px] text-slate-600 font-mono">
+                                SHOWING {processedData.length} OF {data.length} ASSETS
+                            </div>
+                        </div>
+
+                        {/* Main Grid: Table */}
+                        <div className="xl:col-span-4 glass backdrop-blur-3xl rounded-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(16,185,129,0.15)] ring-1 ring-white/10 relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none"></div>
+                            <div className="overflow-x-auto relative z-10 custom-scrollbar">
+                                <table className="w-full text-sm text-left border-collapse">
+                                    <thead className="text-[10px] text-slate-300 uppercase bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-20 font-black tracking-[0.2em] shadow-lg">
+                                        <tr>
+
+                                            {[
+                                                { k: 'symbol', l: 'TICKER', align: 'left', w: 'min-w-[150px]' },
+                                                { k: 'price', l: 'PRICE', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'high_52w', l: '52W RANGE', align: 'right', w: 'min-w-[120px]' },
+                                                { k: 'score', l: 'RANK', align: 'center', w: 'min-w-[80px]' },
+                                                { k: 'ml_rank_score', l: 'ML RANK', align: 'center', w: 'min-w-[90px]' },
+                                                { k: 'ml_predicted_return', l: 'AI PREDICT', align: 'center', w: 'min-w-[90px]' },
+                                                { k: 'f_score', l: 'QUALITY', align: 'center', w: 'min-w-[70px]' },
+                                                { k: 'sales_growth', l: 'GROWTH', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'roce', l: 'ROCE', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'median_pat_growth', l: 'PAT-5Y', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'avg_roe_5y', l: 'ROE (5Y MED)', align: 'right', w: 'min-w-[110px]' },
+                                                { k: 'inst_holding', l: 'INSTITUTIONAL', align: 'right', w: 'min-w-[120px]' },
+                                                { k: 'value_gap', l: 'VALUATION', align: 'right', w: 'min-w-[110px]' },
+                                                { k: 'technical_signal', l: 'SIGNAL', align: 'center', w: 'min-w-[90px]' },
+                                                { k: 'target_1', l: 'TARGET', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'stop_loss', l: 'STOP', align: 'right', w: 'min-w-[90px]' },
+                                                { k: 'backtest_cagr', l: 'BACKTEST (5Y)', align: 'right', w: 'min-w-[120px]' },
+                                                { k: 'action', l: '', align: 'center', w: 'w-10' },
+                                            ].filter(col => !isCrisisMode || !['sales_growth', 'avg_roe_5y', 'value_gap'].includes(col.k)).map((col) => (
+                                                <th
+                                                    key={col.k}
+                                                    className={`px-4 py-4 cursor-pointer hover:text-emerald-400 transition-colors ${col.w} ${col.align === 'right' ? 'text-right' : (col.align === 'center' ? 'text-center' : 'text-left')} ${col.k === 'symbol' ? 'sticky left-0 bg-[#0f172a] z-30 shadow-[2px_0_10px_rgba(0,0,0,0.5)]' : ''}`}
+                                                    onClick={() => col.k !== 'action' && handleSort(col.k)}
+                                                >
+                                                    <div className={`flex items-center gap-1 ${col.align === 'right' ? 'justify-end' : (col.align === 'center' ? 'justify-center' : 'justify-start')}`}>
+                                                        {col.l}
+                                                        {sortConfig.key === col.k && (
+                                                            sortConfig.direction === 'asc' ? <Icons.SortUp /> : <Icons.SortDown />
+                                                        )}
+                                                    </div>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-800/50">
+                                        {processedData.length > 0 ? processedData.slice(0, visibleCount).map((stock, index) => (
+                                            <tr
+                                                key={stock.symbol}
+                                                onClick={() => handleRowClick(stock.symbol)}
+                                                className={`group transition-all duration-300 cursor-pointer border-b border-slate-800/40 hover:bg-slate-800/60 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_30px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 relative z-10 hover:z-20 ${stock.flash === 'up' ? 'flash-up' : (stock.flash === 'down' ? 'flash-down' : '')} ${index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
+                                            >
+
+                                                {/* Left Sticky Symbol */}
+                                                <td className="px-5 py-4 font-medium text-white sticky left-0 bg-[#0f172a]/95 backdrop-blur-xl group-hover:bg-[#1e293b]/95 border-r border-slate-800/50 transition-colors z-20 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.3)]">
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-1.5 h-10 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.4)] group-hover:shadow-[0_0_15px_rgba(16,185,129,0.8)] transition-all"></div>
+                                                            <div>
+                                                                <span className="text-white font-black tracking-tighter text-xl block leading-tight drop-shadow-md">
+                                                                    {(stock.symbol || 'UNKNOWN').replace('.NS', '')}
+                                                                </span>
+                                                                <span className="text-[9px] text-emerald-400 uppercase tracking-[0.2em] font-black mt-1 block opacity-80 group-hover:opacity-100 transition-opacity">
+                                                                    {stock.sector || 'N/A'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-4 py-4 text-right pr-6">
+                                                    <span className="font-mono text-white text-base font-black tracking-tight group-hover:text-emerald-300 transition-colors">
+                                                        {formatCurrency(stock.price)}
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-4 py-4 text-right">
+                                                    <div className="flex flex-col items-end gap-0.5">
+                                                        <span className="text-[10px] text-slate-500 font-mono">H: {formatCurrency(stock.high_52w)}</span>
+                                                        <span className="text-[10px] text-slate-500 font-mono">L: {formatCurrency(stock.low_52w)}</span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Score Ring */}
+                                                <td className="px-2 py-3 text-center relative group-hover:scale-110 transition-transform duration-300">
+                                                    <div className="relative w-12 h-12 mx-auto flex items-center justify-center bg-slate-900/50 rounded-full shadow-inner border border-white/5">
+                                                        <svg className="w-10 h-10 -rotate-90">
+                                                            <circle cx="20" cy="20" r="16" fill="none" stroke="#1e293b" strokeWidth="4" />
+                                                            <circle
+                                                                cx="20" cy="20" r="16" fill="none" stroke={stock.score >= 75 ? '#10b981' : stock.score >= 50 ? '#f59e0b' : '#ef4444'}
+                                                                strokeWidth="4"
+                                                                strokeDasharray="100"
+                                                                strokeDashoffset={100 * (1 - stock.score / 100)}
+                                                                strokeLinecap="round"
+                                                                className="transition-all duration-1000 shadow-[0_0_10px_currentColor]"
+                                                            />
+                                                        </svg>
+                                                        <div className="absolute inset-0 flex items-center justify-center font-black text-xs text-white">
+                                                            {Math.round(stock.score)}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* ML Rank */}
+                                                <td className="px-4 py-4 text-center">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="font-mono font-black text-sm text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.3)]">
+                                                            {stock.ml_rank_score !== null && stock.ml_rank_score !== undefined ? (stock.ml_rank_score * 100).toFixed(1) : '-'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-4 py-4 text-center">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className={`font-mono font-black text-sm ${(stock.ml_predicted_return || 0) >= 15 ? 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]' : ((stock.ml_predicted_return || 0) > 0 ? 'text-slate-300' : 'text-red-400')}`}>
+                                                            {stock.ml_predicted_return !== null && stock.ml_predicted_return !== undefined ? `${(stock.ml_predicted_return).toFixed(1)}%` : '-'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-4 py-4 text-center">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className={`font-mono font-black text-sm ${stock.f_score >= 7 ? 'text-emerald-400' : 'text-slate-500'}`}>{stock.f_score}</span>
+                                                        <div className="w-8 h-1 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                                                            <div className={`h-full ${stock.f_score >= 7 ? 'bg-emerald-500' : 'bg-slate-600'}`} style={{ width: `${(stock.f_score / 9) * 100}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                    <>
+                                                        <td className={`px-4 py-4 text-right font-mono text-sm font-bold ${stock.sales_growth > 15 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                            {formatPct(stock.sales_growth)}
+                                                        </td>
+                                                        <td className={`px-4 py-4 text-right font-mono text-sm font-bold ${stock.roce > 15 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                            {formatPct(stock.roce)}
+                                                        </td>
+                                                        <td className={`px-4 py-4 text-right font-mono text-sm font-bold ${stock.median_pat_growth > 15 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                            {formatPct(stock.median_pat_growth)}
+                                                        </td>
+                                                        <td className={`px-4 py-4 text-right font-mono text-sm font-bold ${stock.avg_roe_5y > 20 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                                            {formatPct(stock.avg_roe_5y)}
+                                                        </td>
+                                                    </>
+
+                                                <td className="px-4 py-4 text-right">
+                                                    <div className="flex flex-col items-end gap-0.5">
+                                                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">INST</div>
+                                                        <span className={`text-sm font-mono font-bold ${stock.inst_holding > 30 ? 'text-blue-400' : 'text-slate-300'}`}>{stock.inst_holding}%</span>
+                                                        {stock.promoter_holding > 50 && <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider">HIGH PROM</span>}
+                                                    </div>
+                                                </td>
+
+                                                {!isCrisisMode && (
+                                                    <td className="px-4 py-4 text-right">
+                                                        <div className={`font-black font-mono text-sm ${stock.value_gap > 15 ? 'text-emerald-400' : (stock.value_gap < -15 ? 'text-red-400' : 'text-slate-300')}`}>
+                                                            {stock.value_gap > 0 ? '+' : ''}{formatPct(stock.value_gap)}
+                                                        </div>
+                                                        <div className="text-[9px] text-slate-500 font-mono mt-0.5">Fair: {formatCurrency(stock.graham_number)}</div>
+                                                    </td>
+                                                )}
+
+                                                <td className="px-4 py-4 text-center">
+                                                    {getSignalPill(stock.technical_signal)}
+                                                </td>
+
+                                                <td className="px-4 py-4 text-right font-mono text-emerald-400/80 font-bold text-sm tracking-tight">{formatCurrency(stock.target_1)}</td>
+                                                <td className="px-4 py-4 text-right font-mono text-red-400/80 font-bold text-sm tracking-tight">{formatCurrency(stock.stop_loss)}</td>
+
+                                                {/* Backtest Metrics (CAGR & Win Rate) */}
+                                                <td className="px-4 py-4 text-right">
+                                                    <div className="flex flex-col items-end gap-0.5">
+                                                        <span className={`text-sm font-mono font-bold ${stock.backtest_cagr > 15 ? 'text-emerald-400' : (stock.backtest_cagr > 0 ? 'text-slate-300' : 'text-red-400')}`}>
+                                                            {stock.backtest_cagr ? `${stock.backtest_cagr.toFixed(1)}%` : 'N/A'}
+                                                        </span>
+                                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${stock.backtest_win_rate > 50 ? 'text-emerald-500' : 'text-slate-500'}`}>
+                                                            {stock.backtest_win_rate ? `W: ${stock.backtest_win_rate.toFixed(0)}%` : ''}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-4 py-4 text-center">
+                                                    <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-emerald-500/20 hover:border-emerald-500/30 border border-transparent transition-all shadow-none hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="12" className="px-6 py-24 text-center">
+                                                    <div className="flex flex-col items-center justify-center opacity-50">
+                                                        <div className="w-12 h-12 border-2 border-slate-700 rounded-full mb-4 flex items-center justify-center">
+                                                            <Icons.Search />
+                                                        </div>
+                                                        <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">NO ASSETS MATCHING CRITERIA</div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="max-w-[1920px] mx-auto px-6 py-8 text-center text-slate-600 text-[10px] font-bold uppercase tracking-[0.2em] border-t border-white/5 opacity-50">
+                        Institutional Research Terminal | System v2.9.5-dyn | Powered by Sovereign Engine
+                    </footer>
+
+
+
+                    <Modal
+                        show={modalOpen}
+                        onClose={() => setModalOpen(false)}
+                        title={`Audit Report: ${activeStock}`}
+                        stockData={data.find(s => s.symbol === activeStock)}
+                        content={reportContent}
+                        valuation={activeValuation}
+                        peers={activePeers}
+                        financials={activeFinancials}
+                        technicals={activeTechnicals}
+                        shareholding={activeShareholding}
+                        news={activeNews}
+                        governance={activeGovernance}
+                        history={activeHistory}
+                        thesis={activeThesis}
+                        loading={reportLoading}
+                    />
+                    {/* Alert Overlay */}
+                    {latestAlert && (
+                        <div className="fixed bottom-6 right-6 z-50 animate-fade-in group pointer-events-none">
+                            <div className="glass bg-red-950/40 border-red-500/30 p-4 rounded-xl shadow-2xl backdrop-blur-xl flex items-center gap-4 border-l-4 border-l-red-500 max-w-sm pointer-events-auto">
+                                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
+                                    <Icons.Bell />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] mb-0.5">PRIORITY ALERT</div>
+                                    <div className="text-white text-xs font-bold leading-tight">{latestAlert.Reason}</div>
+                                    <div className="text-[10px] text-slate-500 font-mono mt-1 uppercase">{latestAlert.Symbol || 'System'} | {latestAlert.Timestamp ? latestAlert.Timestamp.split(' ')[1] : ''}</div>
+                                </div>
+                                <button
+                                    onClick={() => setLatestAlert(null)}
+                                    className="p-1.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-colors"
+                                >
+                                    <Icons.Close />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+
+
+
+
+
+                    {/* Stress Dashboard */}
+                    {window.stressEngine && <StressDashboard engine={window.stressEngine} />}
+                </div>
+            );
+        };
+
+        const onRenderCallback = (id, phase, actualDuration, baseDuration, startTime, commitTime) => {
+            if (window.stressEngine && window.stressEngine.active) {
+                window.stressEngine.reportProfiler(id, phase, actualDuration, baseDuration, startTime, commitTime);
+            }
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <Profiler id="App" onRender={onRenderCallback}>
+                <App />
+            </Profiler>
+        );
+    </script>
+</body>
+
+</html>

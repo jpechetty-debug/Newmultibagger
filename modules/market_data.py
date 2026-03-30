@@ -1,7 +1,10 @@
 import yfinance as yf
 import pandas as pd
 import datetime
+import logging
 from modules.regime_hmm import RegimeHMM
+
+logger = logging.getLogger(__name__)
 
 class MarketDataProvider:
     """
@@ -49,7 +52,7 @@ class MarketDataProvider:
             return float(threshold), float(current_vix)
             
         except Exception as e:
-            print(f"⚠️ Error fetching VIX: {e}")
+            logger.warning("Market data: VIX fetch failed: %s", e)
             return 30.0, 0.0
 
     def get_market_breadth(self):
@@ -97,7 +100,7 @@ class MarketDataProvider:
             return ratio, above_sma
             
         except Exception as e:
-            print(f"⚠️ Error calculating breadth: {e}")
+            logger.warning("Market data: breadth calculation failed: %s", e)
             return 0.5, 0
 
     def get_market_regime(self, index_ticker="^NSEI"):
@@ -189,7 +192,7 @@ class MarketDataProvider:
                     votes['SIDEWAYS'] += 1 # Volatile in HMM often maps to sideways/high-risk
                     details['hmm_vote'] = 'SIDEWAYS'
             except Exception as hmm_err:
-                print(f"⚠️ HMM Factor Error: {hmm_err}")
+                logger.warning("Market data: HMM factor error: %s", hmm_err)
             
             # --- CONSENSUS ---
             # Winner takes all
@@ -220,7 +223,7 @@ class MarketDataProvider:
             }
             
         except Exception as e:
-            print(f"⚠️ Error in Regime Detection (v2.9): {e}")
+            logger.warning("Market data: regime detection failed: %s", e)
             return {"regime": "SIDEWAYS", "strategy_suggestion": "BALANCED", "details": {}, "votes": {"BULL": 0, "BEAR": 0, "SIDEWAYS": 0}}
 
     def get_batch_history(self, tickers, period="6mo"):
@@ -260,6 +263,6 @@ class MarketDataProvider:
             return closes
             
         except Exception as e:
-            print(f"⚠️ Error fetching batch history: {e}")
+            logger.warning("Market data: batch history fetch failed: %s", e)
             return pd.DataFrame()
 

@@ -186,6 +186,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .conn-dot.dead{background:var(--rose)}
 </style>
 
+<body>
 <div id="root"></div>
 
 <script type="text/babel">
@@ -480,7 +481,9 @@ function Drawer({stock, onClose}) {
   const [financials, setFinancials] = useState(null);
   const [revisions, setRevisions] = useState(null);
   const [drift, setDrift] = useState(null);
+  const [swarm, setSwarm] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [swarmLoading, setSwarmLoading] = useState(false);
 
   useEffect(() => {
     if (!stock) return;
@@ -530,7 +533,7 @@ function Drawer({stock, onClose}) {
   const factors = ['Quality','Growth','Valuation','Momentum','Ownership','Cycle','Risk']
     .map(f => ({factor: f, score: stock[f+'_Score'] || stock[f.toLowerCase()+'_score'] || Math.random()*20+60}));
 
-  const subTabs = ['Overview', 'Technicals', 'Governance', 'Ownership', 'Financials'];
+  const subTabs = ['Overview', 'Technicals', 'Governance', 'Ownership', 'Financials', 'Swarm'];
 
   return (
     <div className="drawer">
@@ -589,18 +592,18 @@ function Drawer({stock, onClose}) {
                 ))}
               </div>
             )}
-            {drift && (
+            {drift && !drift.error && (
               <div className="panel-card">
                 <div className="panel-hdr"><span className="panel-title">Thesis Integrity (Drift)</span></div>
                 <div className="p-3">
                   <div className={`text-lg font-bold mb-1 ${drift.status === 'Safe' ? 'text-emerald-400' : drift.status === 'Warning' ? 'text-amber-400' : 'text-rose-400'}`}>
-                    {drift.status.toUpperCase()}
+                    {(drift.status || 'UNKNOWN').toUpperCase()}
                   </div>
-                  <div className="text-[10px] text-slate-400 italic">"{drift.reason}"</div>
+                  <div className="text-[10px] text-slate-400 italic">"{drift.reason || 'No reason provided'}"</div>
                 </div>
               </div>
             )}
-            {revisions && (
+            {revisions && !revisions.error && (
               <div className="panel-card">
                 <div className="panel-hdr"><span className="panel-title">Analyst Sentiment Revisions</span></div>
                 <div className="p-3 flex justify-between items-center">
@@ -695,6 +698,51 @@ function Drawer({stock, onClose}) {
                 <div className="p-4">
                     <QuarterlyTimeline symbol={sym} />
                 </div>
+            </div>
+        )}
+
+        {activeSubTab === 'Swarm' && (
+            <div className="panel-card">
+                <div className="panel-hdr">
+                    <span className="panel-title">MiroFish Swarm Debate</span>
+                </div>
+                {!swarm ? (
+                    <div style={{padding:'24px', textAlign:'center'}}>
+                        <div style={{fontSize:'9px', color:'var(--t3)', marginBottom:'12px', fontFamily:'var(--mono)', textTransform:'uppercase', letterSpacing:'1px'}}>
+                            Multi-Agent Simulation Required
+                        </div>
+                        <button 
+                            onClick={async () => {
+                                setSwarmLoading(true);
+                                try {
+                                    const d = await fetchJSON(`/api/swarm/${sym}`);
+                                    setSwarm(d);
+                                } finally { setSwarmLoading(false); }
+                            }}
+                            disabled={swarmLoading}
+                            className="scan-btn"
+                        >
+                            {swarmLoading ? '⟳ Running Simulation…' : '⚡ Start Swarm Debate'}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="animate-fade-in" style={{padding:'16px'}}>
+                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px', paddingBottom:'8px', borderBottom:'1px solid var(--wire)'}}>
+                            <div>
+                                <div style={{fontSize:'8px', color:'var(--t3)', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px'}}>Swarm Conviction</div>
+                                <div style={{fontSize:'18px', fontWeight:800, color:'var(--acid)', fontFamily:'var(--mono)'}}>HIGH</div>
+                            </div>
+                            <div style={{textAlign:'right'}}>
+                                <div style={{fontSize:'8px', color:'var(--t3)', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px'}}>Consensus</div>
+                                <div className="badge badge-BUY" style={{display:'inline-block', marginTop:'4px'}}>BULLISH</div>
+                            </div>
+                        </div>
+                        <div 
+                            style={{fontSize:'10px', color:'var(--t2)', fontFamily:'var(--mono)', lineHeight:1.6}}
+                            dangerouslySetInnerHTML={{__html: marked.parse(swarm.report || '')}}
+                        />
+                    </div>
+                )}
             </div>
         )}
 
@@ -1006,7 +1054,9 @@ function AllocationView() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    fetchJSON('/api/allocation/hrp').then(d => { setData(d); setLoading(false); });
+    fetchJSON('/api/allocation/hrp')
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => { setData({weights:{}}); setLoading(false); });
   }, []);
 
   if (loading) return <div className="empty"><div className="loading-dot"/><div className="loading-dot"/><div className="loading-dot"/></div>;
@@ -1049,5 +1099,9 @@ function AllocationView() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
+lementById('root')).render(<App/>);
 </script>
 </html>
