@@ -79,3 +79,6 @@ ops/audit_result.txt
 # ── Data directory (populated at runtime) ────────────────────────────────────
 data/
 runtime/
+
+# Agent State
+.gemini/
